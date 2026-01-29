@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>筋トレノート　</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 16px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .card {
+      background: #fff;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 16px;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>筋トレノート</h1>
+
+<div class="card">
+  <input id="menu" placeholder="種目（例：ベンチプレス）">
+  <input id="weight" placeholder="重量（kg）" type="number">
+  <input id="reps" placeholder="回数" type="number">
+  <button onclick="addRecord()">記録する</button>
+</div>
+
+<div class="card">
+  <h2>記録一覧</h2>
+  <ul id="list"></ul>
+</div>
+
+<script>
+  const list = document.getElementById("list");
+
+  function addRecord() {
+    const menu = document.getElementById("menu").value;
+    const weight = document.getElementById("weight").value;
+    const reps = document.getElementById("reps").value;
+
+    if (!menu || !weight || !reps) return;
+
+    const li = document.createElement("li");
+    li.textContent = `${menu}：${weight}kg × ${reps}回`;
+    list.appendChild(li);
+
+    document.getElementById("menu").value = "";
+    document.getElementById("weight").value = "";
+    document.getElementById("reps").value = "";
+  }
+</script>
+
+</body>
+</html>
