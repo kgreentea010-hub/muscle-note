@@ -46,7 +46,7 @@
   <input id="weight" placeholder="重量（kg）" type="number">
   <input id="reps" placeholder="回数" type="number">
   <button onclick="addRecord()">記録する</button>
-</div>
+　<div id="records"></div>
 
 <div class="card">
   <h2>記録一覧</h2>
@@ -75,3 +75,40 @@
 
 </body>
 </html>
+<script>
+  const recordsEl = document.getElementById("records");
+  const exerciseEl = document.getElementById("exercise");
+  const weightEl = document.getElementById("weight");
+  const repsEl = document.getElementById("reps");
+
+  let records = JSON.parse(localStorage.getItem("records")) || [];
+
+  function render() {
+    recordsEl.innerHTML = "";
+    records.forEach((r, i) => {
+      const div = document.createElement("div");
+      div.className = "record";
+      div.textContent = `${r.exercise} ${r.weight}kg × ${r.reps}回`;
+      recordsEl.appendChild(div);
+    });
+    localStorage.setItem("records", JSON.stringify(records));
+  }
+
+  function addRecord() {
+    if (!exerciseEl.value || !weightEl.value || !repsEl.value) return;
+
+    records.push({
+      exercise: exerciseEl.value,
+      weight: weightEl.value,
+      reps: repsEl.value,
+    });
+
+    exerciseEl.value = "";
+    weightEl.value = "";
+    repsEl.value = "";
+
+    render();
+  }
+
+  render();
+</script>
