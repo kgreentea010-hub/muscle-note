@@ -63,25 +63,14 @@
 
   let records = JSON.parse(localStorage.getItem("records")) || [];
 
-  function render() {
-    recordsEl.innerHTML = "";
-    records.forEach(r => {
-      const div = document.createElement("div");
-      div.className = "record";
-      div.textContent = `${r.date}｜${r.menu}：${r.weight}kg × ${r.reps}回`;
-      recordsEl.appendChild(div);
-    });
-    localStorage.setItem("records", JSON.stringify(records));
-  }
-
   function addRecord() {
     if (!menuEl.value || !weightEl.value || !repsEl.value) return;
 
     records.push({
-    date: dateEl.value || new Date().toISOString().slice(0, 10),
-    menu: menuEl.value,
-    weight: weightEl.value,
-    reps: repsEl.value
+      date: dateEl.value || new Date().toISOString().slice(0, 10),
+      menu: menuEl.value,
+      weight: weightEl.value,
+      reps: repsEl.value
     });
 
     menuEl.value = "";
@@ -89,22 +78,61 @@
     repsEl.value = "";
     dateEl.value = "";
 
-    function deleteRecord(record) {
-  records = records.filter(r =>
-    !(r.date === record.date &&
-      r.menu === record.menu &&
-      r.weight === record.weight &&
-      r.reps === record.reps)
-  );
+    render();
+  }
 
-  render();
-}
-    function render() {
-  // 日付ごとにまとめる表示処理
-}
-    
+  function deleteRecord(record) {
+    records = records.filter(r =>
+      !(r.date === record.date &&
+        r.menu === record.menu &&
+        r.weight === record.weight &&
+        r.reps === record.reps)
+    );
+    render();
+  }
+
+  function render() {
+    recordsEl.innerHTML = "";
+
+    const grouped = {};
+
+    records.forEach(r => {
+      if (!grouped[r.date]) {
+        grouped[r.date] = [];
+      }
+      grouped[r.date].push(r);
+    });
+
+    Object.keys(grouped)
+      .sort()
+      .reverse()
+      .forEach(date => {
+        const title = document.createElement("h3");
+        title.textContent = date;
+        recordsEl.appendChild(title);
+
+        grouped[date].forEach(r => {
+          const div = document.createElement("div");
+          div.className = "record";
+
+          const span = document.createElement("span");
+          span.textContent = `・${r.menu}：${r.weight}kg × ${r.reps}回`;
+
+          const btn = document.createElement("button");
+          btn.textContent = "削除";
+          btn.style.marginLeft = "8px";
+          btn.onclick = () => deleteRecord(r);
+
+          div.appendChild(span);
+          div.appendChild(btn);
+          recordsEl.appendChild(div);
+        });
+      });
+
+    localStorage.setItem("records", JSON.stringify(records));
+  }
+
   render();
 </script>
-
 </body>
 </html>
