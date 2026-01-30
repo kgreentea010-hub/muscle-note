@@ -89,6 +89,19 @@
     repsEl.value = "";
     dateEl.value = "";
 
+    function deleteRecord(record) {
+  records = records.filter(r =>
+    !(r.date === record.date &&
+      r.menu === record.menu &&
+      r.weight === record.weight &&
+      r.reps === record.reps)
+  );
+
+  render();
+}
+    function render() {
+  // 日付ごとにまとめる表示処理
+}
     render();
   }
 
