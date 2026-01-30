@@ -70,6 +70,10 @@
   const weightEl = document.getElementById("weight");
   const repsEl = document.getElementById("reps");
 
+  function setToday() {
+  const today = new Date().toISOString().slice(0, 10);
+  dateEl.value = today;
+}
   let records = JSON.parse(localStorage.getItem("records")) || [];
 
   function addRecord() {
@@ -85,7 +89,7 @@
   menuEl.value = "";
   weightEl.value = "";
   repsEl.value = "";
-  dateEl.value = "";
+  setToday();
 
   render();
 }
@@ -167,6 +171,7 @@ filterMenuEl.addEventListener("change", () => {
       filteredRecordsEl.appendChild(div);
     });
 });
+  setToday();
   render();
 </script>
 </body>
