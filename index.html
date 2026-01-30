@@ -42,6 +42,7 @@
 <h1>筋トレノート</h1>
 
 <div class="card">
+  <input id="date" type="date">
   <input id="menu" placeholder="種目（例：ベンチプレス）">
   <input id="weight" placeholder="重量（kg）" type="number">
   <input id="reps" placeholder="回数" type="number">
@@ -55,6 +56,7 @@
 
 <script>
   const recordsEl = document.getElementById("records");
+  const dateEl = document.getElementById("date");
   const menuEl = document.getElementById("menu");
   const weightEl = document.getElementById("weight");
   const repsEl = document.getElementById("reps");
@@ -66,7 +68,7 @@
     records.forEach(r => {
       const div = document.createElement("div");
       div.className = "record";
-      div.textContent = `${r.menu}：${r.weight}kg × ${r.reps}回`;
+      div.textContent = `${r.date}｜${r.menu}：${r.weight}kg × ${r.reps}回`;
       recordsEl.appendChild(div);
     });
     localStorage.setItem("records", JSON.stringify(records));
@@ -76,14 +78,16 @@
     if (!menuEl.value || !weightEl.value || !repsEl.value) return;
 
     records.push({
-      menu: menuEl.value,
-      weight: weightEl.value,
-      reps: repsEl.value
+    date: dateEl.value || new Date().toISOString().slice(0, 10),
+    menu: menuEl.value,
+    weight: weightEl.value,
+    reps: repsEl.value
     });
 
     menuEl.value = "";
     weightEl.value = "";
     repsEl.value = "";
+    dateEl.value = "";
 
     render();
   }
