@@ -121,8 +121,8 @@
 
   function render() {
     const today = new Date().toISOString().slice
-   records.forEach(r => {
-    if (!r.date) {
+    records.forEach(r => {
+     if (!r.date) {
       r.date = new Date().toISOString().slice(0, 10);
     }
   });
