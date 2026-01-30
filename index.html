@@ -120,6 +120,7 @@
   }
 
   function render() {
+    const today = new Date().toISOString().slice
    records.forEach(r => {
     if (!r.date) {
       r.date = new Date().toISOString().slice(0, 10);
@@ -145,8 +146,18 @@
   .reverse()
   .forEach(date => {
     const title = document.createElement("h3");
+
+    if (date === today) {
+    title.textContent = `🔥 今日 (${date})`;
+    title.style.color = "#d32f2f";
+    title.style.background = "#ffecec";
+    title.style.padding = "6px";
+    title.style.borderRadius = "6px";
+  } else {
     title.textContent = date;
-    recordsEl.appendChild(title);
+  }
+
+recordsEl.appendChild(title);
 
     const menus = grouped[date];
 
