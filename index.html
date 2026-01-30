@@ -1,4 +1,15 @@
-  padding: 16px;
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>筋トレノート</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 16px;
     }
     h1 {
       text-align: center;
@@ -21,8 +32,8 @@
       border: none;
       border-radius: 6px;
     }
-    ul {
-      padding-left: 20px;
+    .record {
+      margin-top: 6px;
     }
   </style>
 </head>
@@ -35,38 +46,16 @@
   <input id="weight" placeholder="重量（kg）" type="number">
   <input id="reps" placeholder="回数" type="number">
   <button onclick="addRecord()">記録する</button>
-　<div id="records"></div>
+</div>
 
 <div class="card">
   <h2>記録一覧</h2>
-  <ul id="list"></ul>
+  <div id="records"></div>
 </div>
 
 <script>
-  const list = document.getElementById("list");
-
-  function addRecord() {
-    const menu = document.getElementById("menu").value;
-    const weight = document.getElementById("weight").value;
-    const reps = document.getElementById("reps").value;
-
-    if (!menu || !weight || !reps) return;
-
-    const li = document.createElement("li");
-    li.textContent = `${menu}：${weight}kg × ${reps}回`;
-    list.appendChild(li);
-
-    document.getElementById("menu").value = "";
-    document.getElementById("weight").value = "";
-    document.getElementById("reps").value = "";
-  }
-</script>
-
-</body>
-</html>
-<script>
   const recordsEl = document.getElementById("records");
-  const exerciseEl = document.getElementById("exercise");
+  const menuEl = document.getElementById("menu");
   const weightEl = document.getElementById("weight");
   const repsEl = document.getElementById("reps");
 
@@ -74,25 +63,25 @@
 
   function render() {
     recordsEl.innerHTML = "";
-    records.forEach((r, i) => {
+    records.forEach(r => {
       const div = document.createElement("div");
       div.className = "record";
-      div.textContent = `${r.exercise} ${r.weight}kg × ${r.reps}回`;
+      div.textContent = `${r.menu}：${r.weight}kg × ${r.reps}回`;
       recordsEl.appendChild(div);
     });
     localStorage.setItem("records", JSON.stringify(records));
   }
 
   function addRecord() {
-    if (!exerciseEl.value || !weightEl.value || !repsEl.value) return;
+    if (!menuEl.value || !weightEl.value || !repsEl.value) return;
 
     records.push({
-      exercise: exerciseEl.value,
+      menu: menuEl.value,
       weight: weightEl.value,
-      reps: repsEl.value,
+      reps: repsEl.value
     });
 
-    exerciseEl.value = "";
+    menuEl.value = "";
     weightEl.value = "";
     repsEl.value = "";
 
@@ -101,3 +90,6 @@
 
   render();
 </script>
+
+</body>
+</html>
