@@ -53,8 +53,17 @@
   <h2>記録一覧</h2>
   <div id="records"></div>
 </div>
+<div class="card">
+　<h2>種目別履歴</h2>
+  <select id="filterMenu">
+    <option value="">種目を選択</option>
+  </select>
+  <div id="filteredRecords"></div>
+</div>
 
 <script>
+  const filterMenuEl = document.getElementById("filterMenu");
+  const filteredRecordsEl = document.getElementById("filteredRecords");
   const recordsEl = document.getElementById("records");
   const dateEl = document.getElementById("date");
   const menuEl = document.getElementById("menu");
@@ -77,7 +86,18 @@
     weightEl.value = "";
     repsEl.value = "";
     dateEl.value = "";
+ function updateMenuOptions() {
+  const menus = [...new Set(records.map(r => r.menu))];
 
+  filterMenuEl.innerHTML = '<option value="">種目を選択</option>';
+
+  menus.forEach(menu => {
+    const option = document.createElement("option");
+    option.value = menu;
+    option.textContent = menu;
+    filterMenuEl.appendChild(option);
+  });
+}
     render();
   }
 
@@ -130,8 +150,23 @@
       });
 
     localStorage.setItem("records", JSON.stringify(records));
+    updateMenuOptions();
   }
+filterMenuEl.addEventListener("change", () => {
+  const selected = filterMenuEl.value;
+  filteredRecordsEl.innerHTML = "";
 
+  if (!selected) return;
+
+  records
+    .filter(r => r.menu === selected)
+    .forEach(r => {
+      const div = document.createElement("div");
+      div.className = "record";
+      div.textContent = `${r.date}｜${r.weight}kg × ${r.reps}回`;
+      filteredRecordsEl.appendChild(div);
+    });
+});
   render();
 </script>
 </body>
