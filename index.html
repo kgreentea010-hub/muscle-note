@@ -128,40 +128,41 @@
 
   recordsEl.innerHTML = "";
 
-    const grouped = {};
+  const grouped = {};
 
-    records.forEach(r => {
-      if (!grouped[r.date]) {
-        grouped[r.date] = [];
-      }
-      grouped[r.date].push(r);
-    });
+  records.forEach(r => {
+   if (!grouped[r.date]) {
+   grouped[r.date] = {};
+   }
+   if (!grouped[r.date][r.menu]) {
+    grouped[r.date][r.menu] = [];
+   }
+   grouped[r.date][r.menu].push(r);
+});
 
     Object.keys(grouped)
-      .sort()
-      .reverse()
-      .forEach(date => {
-        const title = document.createElement("h3");
-        title.textContent = date;
-        recordsEl.appendChild(title);
+  .sort()
+  .reverse()
+  .forEach(date => {
+    const title = document.createElement("h3");
+    title.textContent = date;
+    recordsEl.appendChild(title);
 
-        grouped[date].forEach(r => {
-          const div = document.createElement("div");
-          div.className = "record";
+    const menus = grouped[date];
 
-          const span = document.createElement("span");
-          span.textContent = `・${r.menu}：${r.weight}kg × ${r.reps}回`;
+    Object.keys(menus).forEach(menu => {
+      const menuTitle = document.createElement("strong");
+      menuTitle.textContent = `▼ ${menu}`;
+      recordsEl.appendChild(menuTitle);
 
-          const btn = document.createElement("button");
-          btn.textContent = "削除";
-          btn.style.marginLeft = "8px";
-          btn.onclick = () => deleteRecord(r);
-
-          div.appendChild(span);
-          div.appendChild(btn);
-          recordsEl.appendChild(div);
-        });
+      menus[menu].forEach(r => {
+        const div = document.createElement("div");
+        div.className = "record";
+        div.textContent = `　${r.weight}kg × ${r.reps}回`;
+        recordsEl.appendChild(div);
       });
+    });
+  });
 
     localStorage.setItem("records", JSON.stringify(records));
     updateMenuOptions();
