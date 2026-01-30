@@ -120,10 +120,11 @@
   }
 
   function render() {
-    const today = new Date().toISOString().slice
+    const today = new Date().toISOString().slice(0, 10);
+
     records.forEach(r => {
-     if (!r.date) {
-      r.date = new Date().toISOString().slice(0, 10);
+      if (!r.date) {
+       r.date = today;
     }
   });
 
