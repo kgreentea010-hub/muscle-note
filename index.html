@@ -73,21 +73,21 @@
   let records = JSON.parse(localStorage.getItem("records")) || [];
 
   function addRecord() {
-    if (!menuEl.value || !weightEl.value || !repsEl.value) return;
+  if (!menuEl.value || !weightEl.value || !repsEl.value) return;
 
-    records.push({
-      date: dateEl.value || new Date().toISOString().slice(0, 10),
-      menu: menuEl.value,
-      weight: weightEl.value,
-      reps: repsEl.value
-    });
+  records.push({
+    date: dateEl.value || new Date().toISOString().slice(0, 10),
+    menu: menuEl.value,
+    weight: Number(weightEl.value),
+    reps: Number(repsEl.value)
+  });
 
-    menuEl.value = "";
-    weightEl.value = "";
-    repsEl.value = "";
-    dateEl.value = "";
+  menuEl.value = "";
+  weightEl.value = "";
+  repsEl.value = "";
+  dateEl.value = "";
 
-    render();
+  render();
 }
  function updateMenuOptions() {
   const menus = [...new Set(records.map(r => r.menu))];
@@ -101,9 +101,6 @@
     filterMenuEl.appendChild(option);
   });
 }
-    render();
-  }
-
   function deleteRecord(record) {
     records = records.filter(r =>
       !(r.date === record.date &&
