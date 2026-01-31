@@ -114,7 +114,10 @@
     timerId = null;
 
     timerLabel.textContent = "休憩終了！";
-
+    timerLabel.style.color = "red";
+    timerLabel.style.fontSize = "28px";
+    timerLabel.style.fontWeight = "bold";
+    
     playBeep();
 
     if (navigator.vibrate) {
