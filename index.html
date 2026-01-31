@@ -93,6 +93,35 @@
   const maxRecordsEl = document.getElementById("maxRecords");
   const timerRange = document.getElementById("timerRange");
   const timerLabel = document.getElementById("timerLabel");
+  const startBtn = document.getElementById("startTimer");
+  const stopBtn = document.getElementById("stopTimer");
+
+  let timerId = null;
+  let remaining = 0;
+
+  startBtn.addEventListener("click", () => {
+  if (timerId) return; // 二重起動防止
+
+  remaining = Number(timerRange.value);
+  timerLabel.textContent = `${remaining} 秒`;
+
+  timerId = setInterval(() => {
+    remaining--;
+    timerLabel.textContent = `${remaining} 秒`;
+
+    if (remaining <= 0) {
+      clearInterval(timerId);
+      timerId = null;
+      timerLabel.textContent = "休憩終了！";
+    }
+  }, 1000);
+});
+
+  stopBtn.addEventListener("click", () => {
+  clearInterval(timerId);
+  timerId = null;
+  timerLabel.textContent = "停止しました";
+});
 
 timerRange.addEventListener("input", () => {
   timerLabel.textContent = `${timerRange.value} 秒`;
