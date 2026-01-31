@@ -106,24 +106,25 @@
   timerLabel.textContent = `${remaining} 秒`;
 
   timerId = setInterval(() => {
-    remaining--;
-    timerLabel.textContent = `${remaining} 秒`;
+   remaining--;
+   timerLabel.textContent = `${remaining} 秒`;
 
   if (remaining <= 0) {
-  clearInterval(timerId);
-  timerId = null;
-  timerLabel.textContent = "休憩終了！";
+    clearInterval(timerId);
+    timerId = null;
 
-  // 🔊 音
-  playBeep();
+    timerLabel.textContent = "休憩終了！";
 
-  // 📳 バイブ
-  if (navigator.vibrate) {
-    navigator.vibrate([200, 100, 200]);
+    playBeep();
+
+    if (navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
+
+    // alertは使わない！
   }
-  alert("休憩終了！");
-}
-  }, 1000);
+}, 1000);
+    
 });
 
   stopBtn.addEventListener("click", () => {
