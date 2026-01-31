@@ -109,11 +109,13 @@
     remaining--;
     timerLabel.textContent = `${remaining} 秒`;
 
-    if (remaining <= 0) {
-      clearInterval(timerId);
-      timerId = null;
-      timerLabel.textContent = "休憩終了！";
-    }
+  if (remaining <= 0) {
+  clearInterval(timerId);
+  timerId = null;
+  timerLabel.textContent = "休憩終了！";
+
+  alert("休憩終了！");
+}
   }, 1000);
 });
 
