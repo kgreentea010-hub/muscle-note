@@ -248,16 +248,23 @@ recordsEl.appendChild(title);
     const menus = grouped[date];
 
     Object.keys(menus).forEach(menu => {
-      const menuTitle = document.createElement("strong");
+    const menuTitle = document.createElement("strong");
       menuTitle.textContent = `▼ ${menu}`;
       recordsEl.appendChild(menuTitle);
 
-      menus[menu].forEach(r => {
-        const div = document.createElement("div");
-        div.className = "record";
-        div.textContent = `　${r.weight}kg × ${r.reps}回`;
-        recordsEl.appendChild(div);
-      });
+    const totalSets = menus[menu].length;
+
+     menus[menu].forEach((r, index) => {
+    const div = document.createElement("div");
+     div.className = "record";
+
+    const setNumber = index + 1;
+
+  div.textContent =
+    `　${r.weight}kg × ${r.reps}回（${setNumber}/${totalSets}セット目）`;
+
+  recordsEl.appendChild(div);
+});
     });
   });
 
