@@ -114,6 +114,13 @@
   timerId = null;
   timerLabel.textContent = "休憩終了！";
 
+  // 🔊 音
+  playBeep();
+
+  // 📳 バイブ
+  if (navigator.vibrate) {
+    navigator.vibrate([200, 100, 200]);
+
   alert("休憩終了！");
 }
   }, 1000);
@@ -302,6 +309,12 @@ filterMenuEl.addEventListener("change", () => {
 });
   setToday();
   render();
+function playBeep() {
+  const audio = new Audio(
+    "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
+  );
+  audio.play();
+}
 </script>
 </body>
 </html>
