@@ -62,6 +62,7 @@
 
   <h3>MAX重量</h3>
   <div id="maxRecords"></div>
+  <button onclick="exportCSV()">CSV書き出し</button>
 </div>
 
 <script>
@@ -202,7 +203,34 @@ function renderMax() {
     maxRecordsEl.appendChild(div);
   });
 }
-  
+function exportCSV() {
+  if (records.length === 0) {
+    alert("記録がありません");
+    return;
+  }
+
+  const header = ["日付", "種目", "重量(kg)", "回数"];
+  const rows = records.map(r => [
+    r.date,
+    r.menu,
+    r.weight,
+    r.reps
+  ]);
+
+  const csv = [header, ...rows]
+    .map(row => row.join(","))
+    .join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "workout_records.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
 filterMenuEl.addEventListener("change", () => {
   const selected = filterMenuEl.value;
   filteredRecordsEl.innerHTML = "";
