@@ -179,6 +179,7 @@ timerRange.addEventListener("input", () => {
     // 自動レストがONならタイマー開始
     if (autoRestEl.checked) {
   startRestTimer();
+     }
 }
  function updateMenuOptions() {
   const menus = [...new Set(records.map(r => r.menu))];
