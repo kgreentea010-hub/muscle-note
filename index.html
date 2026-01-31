@@ -108,7 +108,6 @@
   const startBtn = document.getElementById("startTimer");
   const stopBtn = document.getElementById("stopTimer");
 
-  startBtn.addEventListener("click", startRestTimer);
 
   let timerId = null;
   let remaining = 0;
@@ -143,6 +142,8 @@
     }
   }, 1000);
 }
+
+  startBtn.addEventListener("click", startRestTimer);
 
   stopBtn.addEventListener("click", () => {
   clearInterval(timerId);
