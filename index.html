@@ -98,6 +98,7 @@
   const filteredRecordsEl = document.getElementById("filteredRecords");
   const recordsEl = document.getElementById("records");
   const dateEl = document.getElementById("date");
+  const autoRestEl = document.getElementById("autoRest");
   const menuEl = document.getElementById("menu");
   const weightEl = document.getElementById("weight");
   const repsEl = document.getElementById("reps");
@@ -107,39 +108,41 @@
   const startBtn = document.getElementById("startTimer");
   const stopBtn = document.getElementById("stopTimer");
 
+  startBtn.addEventListener("click", startRestTimer);
+
   let timerId = null;
   let remaining = 0;
 
-  startBtn.addEventListener("click", () => {
-  if (timerId) return; // 二重起動防止
+  function startRestTimer() {
+   if (timerId) return;
 
-  remaining = Number(timerRange.value);
-  timerLabel.textContent = `${remaining} 秒`;
-
-  timerId = setInterval(() => {
-   remaining--;
+   remaining = Number(timerRange.value);
    timerLabel.textContent = `${remaining} 秒`;
+   timerLabel.style.color = "";
+   timerLabel.style.fontSize = "";
+   timerLabel.style.fontWeight = "";
 
-  if (remaining <= 0) {
-    clearInterval(timerId);
-    timerId = null;
+   timerId = setInterval(() => {
+    remaining--;
+    timerLabel.textContent = `${remaining} 秒`;
 
-    timerLabel.textContent = "休憩終了！";
-    timerLabel.style.color = "red";
-    timerLabel.style.fontSize = "28px";
-    timerLabel.style.fontWeight = "bold";
-    
-    playBeep();
+    if (remaining <= 0) {
+      clearInterval(timerId);
+      timerId = null;
 
-    if (navigator.vibrate) {
-      navigator.vibrate([200, 100, 200]);
+      timerLabel.textContent = "休憩終了！";
+      timerLabel.style.color = "red";
+      timerLabel.style.fontSize = "28px";
+      timerLabel.style.fontWeight = "bold";
+
+      playBeep();
+
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200]);
+      }
     }
-
-    // alertは使わない！
-  }
-}, 1000);
-    
-});
+  }, 1000);
+}
 
   stopBtn.addEventListener("click", () => {
   clearInterval(timerId);
