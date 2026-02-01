@@ -165,14 +165,17 @@ timerRange.addEventListener("input", () => {
   if (!menuEl.value || !weightEl.value || !repsEl.value) return;
 
   records.push({
+    // 最後に使った入力を保存
+  localStorage.setItem("lastMenu", menuEl.value);
+  localStorage.setItem("lastWeight", weightEl.value);
+  localStorage.setItem("lastDate", dateEl.value);
     date: dateEl.value || new Date().toISOString().slice(0, 10),
     menu: menuEl.value,
     weight: Number(weightEl.value),
     reps: Number(repsEl.value)
   });
 
-  menuEl.value = "";
-  weightEl.value = "";
+  // 記録後：回数だけリセット
   repsEl.value = "";
   setToday();
 
@@ -338,13 +341,31 @@ filterMenuEl.addEventListener("change", () => {
     });
 });
   setToday();
+  restoreLastInput();
   render();
+  
 function playBeep() {
   const audio = new Audio(
     "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
   );
   audio.play();
 }
+function restoreLastInput() {
+  const lastDate = localStorage.getItem("lastDate");
+  const today = new Date().toISOString().slice(0, 10);
+
+  // 同じ日なら復元
+  if (lastDate === today) {
+    menuEl.value = localStorage.getItem("lastMenu") || "";
+    weightEl.value = localStorage.getItem("lastWeight") || "";
+  } else {
+    // 日付が変わってたらリセット
+    localStorage.removeItem("lastMenu");
+    localStorage.removeItem("lastWeight");
+    localStorage.removeItem("lastDate");
+  }
+}
+  
 </script>
 </body>
 </html>
