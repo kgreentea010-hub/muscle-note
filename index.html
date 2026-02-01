@@ -155,35 +155,36 @@ timerRange.addEventListener("input", () => {
   timerLabel.textContent = `${timerRange.value} 秒`;
 });
   
-  function setToday() {
+function setToday() {
   const today = new Date().toISOString().slice(0, 10);
   dateEl.value = today;
 }
   let records = JSON.parse(localStorage.getItem("records")) || [];
 
-  function addRecord() {
+function addRecord() {
   if (!menuEl.value || !weightEl.value || !repsEl.value) return;
 
-  records.push({
-    // 最後に使った入力を保存
+  // ✅ 先に保存（pushの外）
   localStorage.setItem("lastMenu", menuEl.value);
   localStorage.setItem("lastWeight", weightEl.value);
   localStorage.setItem("lastDate", dateEl.value);
+
+  records.push({
     date: dateEl.value || new Date().toISOString().slice(0, 10),
     menu: menuEl.value,
     weight: Number(weightEl.value),
     reps: Number(repsEl.value)
   });
 
-  // 記録後：回数だけリセット
+  // 回数だけリセット
   repsEl.value = "";
   setToday();
 
   render();
-    // 自動レストがONならタイマー開始
-    if (autoRestEl.checked) {
-  startRestTimer();
-     }
+
+  if (autoRestEl.checked) {
+    startRestTimer();
+  }
 }
  function updateMenuOptions() {
   const menus = [...new Set(records.map(r => r.menu))];
