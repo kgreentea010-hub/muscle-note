@@ -49,6 +49,23 @@
     border: none;
     border-radius: 4px;
     }
+    .today-summary {
+  background: #f0f8ff;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.today-summary h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+}
+
+.today-summary .numbers {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
@@ -88,6 +105,7 @@
 
 <div class="card">
   <h2>記録一覧</h2>
+  <div id="todaySummary" class="today-summary"></div>
   <div id="records"></div>
 </div>
 <div class="card">
@@ -292,6 +310,7 @@ recordsEl.appendChild(title);
     localStorage.setItem("records", JSON.stringify(records));
     updateMenuOptions();
     renderMax();
+    renderTodaySummary();
   }
   
 function renderMax() {
@@ -314,6 +333,31 @@ function renderMax() {
     div.textContent = `${menu}：MAX ${maxMap[menu]}kg`;
     maxRecordsEl.appendChild(div);
   });
+}
+function renderTodaySummary() {
+  const today = new Date().toISOString().slice(0, 10);
+  const todaySummaryEl = document.getElementById("todaySummary");
+
+  const todayRecords = records.filter(r => r.date === today);
+
+  if (todayRecords.length === 0) {
+    todaySummaryEl.innerHTML = "";
+    return;
+  }
+
+  const totalSets = todayRecords.length;
+
+  const totalVolume = todayRecords.reduce((sum, r) => {
+    return sum + (Number(r.weight) * Number(r.reps));
+  }, 0);
+
+  todaySummaryEl.innerHTML = `
+    <h3>📊 今日のトレーニング</h3>
+    <div class="numbers">
+      <div>合計セット数：${totalSets}</div>
+      <div>総ボリューム：${totalVolume.toLocaleString()}kg</div>
+    </div>
+  `;
 }
 function exportCSV() {
   if (records.length === 0) {
