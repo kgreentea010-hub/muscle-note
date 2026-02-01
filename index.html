@@ -279,6 +279,7 @@ recordsEl.appendChild(title);
   `;
 
   div.querySelector(".delete-btn").onclick = () => {
+   if (confirm("この記録を削除しますか？")) {
     deleteRecord(r);
   };
 
