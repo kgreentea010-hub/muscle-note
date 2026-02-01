@@ -105,7 +105,7 @@
 
 <div class="card">
   <h2>記録一覧</h2>
-  <div id="todaySummary" class="today-summary"></div>
+  <div id="dailySummary" class="today-summary"></div>
   <div id="records"></div>
 </div>
 <div class="card">
@@ -134,7 +134,7 @@
   const timerLabel = document.getElementById("timerLabel");
   const startBtn = document.getElementById("startTimer");
   const stopBtn = document.getElementById("stopTimer");
-
+  const dailySummaryEl = document.getElementById("dailySummary");
 
   let timerId = null;
   let remaining = 0;
@@ -310,9 +310,31 @@ recordsEl.appendChild(title);
     localStorage.setItem("records", JSON.stringify(records));
     updateMenuOptions();
     renderMax();
-    renderTodaySummary();
+    renderDailySummary();
   }
-  
+function renderDailySummary() {
+  const selectedDate = dateEl.value;
+  if (!selectedDate) {
+    dailySummaryEl.textContent = "";
+    return;
+  }
+
+  const targetRecords = records.filter(r => r.date === selectedDate);
+
+  if (targetRecords.length === 0) {
+    dailySummaryEl.textContent = `📊 ${selectedDate} の記録はありません`;
+    return;
+  }
+
+  const totalSets = targetRecords.length;
+  const totalVolume = targetRecords.reduce(
+    (sum, r) => sum + r.weight * r.reps,
+    0
+  );
+
+  dailySummaryEl.textContent =
+    `📊 ${selectedDate}｜合計セット数：${totalSets} ｜ 総ボリューム：${totalVolume}kg`;
+}
 function renderMax() {
   maxRecordsEl.innerHTML = "";
 
@@ -405,6 +427,10 @@ filterMenuEl.addEventListener("change", () => {
   setToday();
   restoreLastInput();
   render();
+
+  dateEl.addEventListener("change", () => {
+  renderDailySummary();
+});
   
 function playBeep() {
   const audio = new Audio(
