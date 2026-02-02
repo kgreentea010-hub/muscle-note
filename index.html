@@ -344,12 +344,11 @@ function renderDailySummary() {
     0
   );
 
-  todaySummary.innerHTML یاد=
-  `
-  <div class="summary-date">📊 ${date}</div>
-  <div class="summary-sets">合計セット数：${sets}</div>
-  <div class="summary-volume">総ボリューム：${volume.toLocaleString()} kg</div>
-  `;
+  dailySummaryEl.innerHTML = `
+  <div class="summary-date">📊 ${selectedDate}</div>
+  <div class="summary-sets">合計セット数：${totalSets}</div>
+  <div class="summary-volume">総ボリューム：${totalVolume.toLocaleString()} kg</div>
+`;
     
 }
 function renderMax() {
