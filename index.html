@@ -326,7 +326,8 @@ Object.keys(parts).forEach(part => {
 
   // 部位タイトル
   const partTitle = document.createElement("div");
-  partTitle.textContent = `【${part}】`;
+  const arrow = isToday ? "▼" : "▶";
+  partTitle.textContent = `${arrow} ${part}`;
   partTitle.style.fontWeight = "bold";
   partTitle.style.marginTop = "8px";
   partTitle.style.background = "#f0f0f0";
@@ -342,9 +343,10 @@ Object.keys(parts).forEach(part => {
   partContent.style.display = isToday ? "block" : "none";
 
   partTitle.onclick = () => {
-    partContent.style.display =
-      partContent.style.display === "none" ? "block" : "none";
-  };
+  const isOpen = partContent.style.display === "block";
+  partContent.style.display = isOpen ? "none" : "block";
+  partTitle.textContent = `${isOpen ? "▶" : "▼"} ${part}`;
+};
 
   recordsEl.appendChild(partTitle);
   recordsEl.appendChild(partContent);
