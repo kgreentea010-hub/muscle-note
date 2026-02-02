@@ -303,6 +303,9 @@ function addRecord() {
   .sort()
   .reverse()
   .forEach(date => {
+
+    const today = new Date().toISOString().slice(0, 10);
+    const isToday = date === today;
     const title = document.createElement("h3");
 
     if (date === today) {
@@ -316,7 +319,66 @@ function addRecord() {
   }
 
 recordsEl.appendChild(title);
+    
+    const parts = grouped[date];
 
+Object.keys(parts).forEach(part => {
+
+  // 部位タイトル
+  const partTitle = document.createElement("div");
+  partTitle.textContent = `【${part}】`;
+  partTitle.style.fontWeight = "bold";
+  partTitle.style.marginTop = "8px";
+  partTitle.style.background = "#f0f0f0";
+  partTitle.style.padding = "6px";
+  partTitle.style.borderRadius = "6px";
+  partTitle.style.cursor = "pointer";
+
+  // 中身コンテナ
+  const partContent = document.createElement("div");
+  partContent.style.marginLeft = "8px";
+
+  // 今日だけ開く
+  partContent.style.display = isToday ? "block" : "none";
+
+  partTitle.onclick = () => {
+    partContent.style.display =
+      partContent.style.display === "none" ? "block" : "none";
+  };
+
+  recordsEl.appendChild(partTitle);
+  recordsEl.appendChild(partContent);
+
+  const menus = parts[part];
+
+  Object.keys(menus).forEach(menu => {
+    const menuTitle = document.createElement("div");
+    menuTitle.textContent = `▼ ${menu}`;
+    menuTitle.style.marginTop = "4px";
+    menuTitle.style.fontWeight = "bold";
+    partContent.appendChild(menuTitle);
+
+    const totalSets = menus[menu].length;
+
+    menus[menu].forEach((r, index) => {
+      const div = document.createElement("div");
+      div.className = "record";
+
+      div.innerHTML = `
+        ${r.weight}kg × ${r.reps}回（${index + 1}/${totalSets}セット目）
+        <button class="delete-btn">削除</button>
+      `;
+
+      div.querySelector(".delete-btn").onclick = () => {
+        if (confirm("この記録を削除しますか？")) {
+          deleteRecord(r);
+        }
+      };
+
+      partContent.appendChild(div);
+    });
+  });
+});
     
   });
 
