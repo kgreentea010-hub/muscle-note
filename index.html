@@ -333,9 +333,15 @@ function renderDailySummary() {
   const parts = grouped[date];
 
 Object.keys(parts).forEach(part => {
-  const partTitle = document.createElement("h4");
+  const partTitle = document.createElement("div");
   partTitle.textContent = `【${part}】`;
+  partTitle.style.cursor = "pointer";
+  partTitle.style.fontWeight = "bold";
   partTitle.style.marginTop = "8px";
+  partTitle.style.background = "#f0f0f0";
+  partTitle.style.padding = "6px";
+  partTitle.style.borderRadius = "6px";
+
   recordsEl.appendChild(partTitle);
 
   const menus = parts[part];
