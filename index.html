@@ -319,6 +319,23 @@ function addRecord() {
   }
 
 recordsEl.appendChild(title);
+    const dayContainer = document.createElement("div");
+    dayContainer.style.marginLeft = "8px";
+
+    if (isToday) {
+     dayContainer.style.display = "block"; // 今日 → 開いたまま
+    } else {
+     dayContainer.style.display = "none";  // それ以外 → 閉じる
+    }
+
+    title.style.cursor = "pointer";
+
+    title.onclick = () => {
+     dayContainer.style.display =
+      dayContainer.style.display === "none" ? "block" : "none";
+    };
+
+    recordsEl.appendChild(dayContainer);
     
     const parts = grouped[date];
 
