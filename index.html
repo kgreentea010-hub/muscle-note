@@ -323,7 +323,7 @@ recordsEl.appendChild(title);
     localStorage.setItem("records", JSON.stringify(records));
     updateMenuOptions();
     renderMax();
-    renderDailySummary();
+    //renderDailySummary();
   }
 function renderDailySummary() {
   const selectedDate = dateEl.value;
@@ -342,8 +342,13 @@ Object.keys(parts).forEach(part => {
   partTitle.style.padding = "6px";
   partTitle.style.borderRadius = "6px";
 
+
   recordsEl.appendChild(partTitle);
 
+  const partContent = document.createElement("div");
+  partContent.style.marginLeft = "8px";
+  recordsEl.appendChild(partContent);
+  
   const menus = parts[part];
 
   Object.keys(menus).forEach(menu => {
