@@ -365,8 +365,8 @@ Object.keys(parts).forEach(part => {
   partTitle.textContent = `${isOpen ? "▶" : "▼"} ${part}`;
 };
 
-  recordsEl.appendChild(partTitle);
-  recordsEl.appendChild(partContent);
+  dayContainer.appendChild(partTitle);
+  dayContainer.appendChild(partContent);
 
   const menus = parts[part];
 
@@ -525,9 +525,9 @@ filterMenuEl.addEventListener("change", () => {
   restoreLastInput();
   render();
 
-  dateEl.addEventListener("change", () => {
-  renderDailySummary();
-});
+  //dateEl.addEventListener("change", () => {
+  //renderDailySummary();
+  //});
   
 function playBeep() {
   const audio = new Audio(
