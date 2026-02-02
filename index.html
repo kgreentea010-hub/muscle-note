@@ -165,6 +165,7 @@
   const menuEl = document.getElementById("menu");
   const weightEl = document.getElementById("weight");
   const repsEl = document.getElementById("reps");
+  const partEl = document.getElementById("part");
   const maxRecordsEl = document.getElementById("maxRecords");
   const timerRange = document.getElementById("timerRange");
   const timerLabel = document.getElementById("timerLabel");
@@ -225,6 +226,10 @@ function setToday() {
   let records = JSON.parse(localStorage.getItem("records")) || [];
 
 function addRecord() {
+  if (!partEl.value) {
+  alert("部位を選択してください");
+  return;
+}
   if (!menuEl.value || !weightEl.value || !repsEl.value) return;
 
   // ✅ 先に保存（pushの外）
@@ -234,6 +239,7 @@ function addRecord() {
 
   records.push({
     date: dateEl.value || new Date().toISOString().slice(0, 10),
+    part: partEl.value, 
     menu: menuEl.value,
     weight: Number(weightEl.value),
     reps: Number(repsEl.value)
