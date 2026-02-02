@@ -325,83 +325,55 @@ recordsEl.appendChild(title);
     renderMax();
     //renderDailySummary();
   }
-function renderDailySummary() {
-  const selectedDate = dateEl.value;
-  if (!selectedDate) {
-    dailySummaryEl.textContent = "";
-    return;
+function renderDailySummary(grouped, date) {
+  dailySummaryEl.innerHTML = "";
+
   const parts = grouped[date];
+  if (!parts) {
+    dailySummaryEl.textContent = `📊 ${date} の記録はありません`;
+    return;
+  }
 
-Object.keys(parts).forEach(part => {
-  const partTitle = document.createElement("div");
-  partTitle.textContent = `【${part}】`;
-  partTitle.style.cursor = "pointer";
-  partTitle.style.fontWeight = "bold";
-  partTitle.style.marginTop = "8px";
-  partTitle.style.background = "#f0f0f0";
-  partTitle.style.padding = "6px";
-  partTitle.style.borderRadius = "6px";
+  Object.keys(parts).forEach(part => {
+    const partTitle = document.createElement("div");
+    partTitle.textContent = `【${part}】`;
+    partTitle.style.fontWeight = "bold";
+    partTitle.style.marginTop = "8px";
+    partTitle.style.background = "#f0f0f0";
+    partTitle.style.padding = "6px";
+    partTitle.style.borderRadius = "6px";
 
+    dailySummaryEl.appendChild(partTitle);
 
-  recordsEl.appendChild(partTitle);
+    const menus = parts[part];
 
-  const partContent = document.createElement("div");
-  partContent.style.marginLeft = "8px";
-  recordsEl.appendChild(partContent);
-  
-  const menus = parts[part];
+    Object.keys(menus).forEach(menu => {
+      const menuTitle = document.createElement("div");
+      menuTitle.textContent = `▼ ${menu}`;
+      menuTitle.style.marginTop = "4px";
+      dailySummaryEl.appendChild(menuTitle);
 
-  Object.keys(menus).forEach(menu => {
-    const menuTitle = document.createElement("strong");
-    menuTitle.textContent = `▼ ${menu}`;
-    menuTitle.style.display = "block";
-    menuTitle.style.marginTop = "4px";
-    recordsEl.appendChild(menuTitle);
+      const totalSets = menus[menu].length;
 
-    const totalSets = menus[menu].length;
+      menus[menu].forEach((r, index) => {
+        const div = document.createElement("div");
+        div.className = "record";
 
-    menus[menu].forEach((r, index) => {
-      const div = document.createElement("div");
-      div.className = "record";
+        div.innerHTML = `
+          ${r.weight}kg × ${r.reps}回（${index + 1}/${totalSets}セット目）
+          <button class="delete-btn">削除</button>
+        `;
 
-      const setNumber = index + 1;
+        div.querySelector(".delete-btn").onclick = () => {
+          if (confirm("この記録を削除しますか？")) {
+            deleteRecord(r);
+          }
+        };
 
-      div.innerHTML = `
-        ${r.weight}kg × ${r.reps}回（${setNumber}/${totalSets}セット目）
-        <button class="delete-btn">削除</button>
-      `;
-
-      div.querySelector(".delete-btn").onclick = () => {
-        if (confirm("この記録を削除しますか？")) {
-          deleteRecord(r);
-        }
-      };
-
-      recordsEl.appendChild(div);
+        dailySummaryEl.appendChild(div);
+      });
     });
   });
-});
-  }
-
-  const targetRecords = records.filter(r => r.date === selectedDate);
-
-  if (targetRecords.length === 0) {
-    dailySummaryEl.textContent = `📊 ${selectedDate} の記録はありません`;
-    return;
-  }
-
-  const totalSets = targetRecords.length;
-  const totalVolume = targetRecords.reduce(
-    (sum, r) => sum + r.weight * r.reps,
-    0
-  );
-
-  dailySummaryEl.innerHTML = `
-  <div class="summary-date">📊 ${selectedDate}</div>
-  <div class="summary-sets">合計セット数：${totalSets}</div>
-  <div class="summary-volume">総ボリューム：${totalVolume.toLocaleString()} kg</div>
-`;
-    
 }
 function renderMax() {
   maxRecordsEl.innerHTML = "";
