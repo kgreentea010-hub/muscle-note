@@ -372,31 +372,7 @@ function renderMax() {
     maxRecordsEl.appendChild(div);
   });
 }
-function renderTodaySummary() {
-  const today = new Date().toISOString().slice(0, 10);
-  const todaySummaryEl = document.getElementById("todaySummary");
 
-  const todayRecords = records.filter(r => r.date === today);
-
-  if (todayRecords.length === 0) {
-    todaySummaryEl.innerHTML = "";
-    return;
-  }
-
-  const totalSets = todayRecords.length;
-
-  const totalVolume = todayRecords.reduce((sum, r) => {
-    return sum + (Number(r.weight) * Number(r.reps));
-  }, 0);
-
-  todaySummaryEl.innerHTML = `
-    <h3>📊 今日のトレーニング</h3>
-    <div class="numbers">
-      <div>合計セット数：${totalSets}</div>
-      <div>総ボリューム：${totalVolume.toLocaleString()}kg</div>
-    </div>
-  `;
-}
 function exportCSV() {
   if (records.length === 0) {
     alert("記録がありません");
