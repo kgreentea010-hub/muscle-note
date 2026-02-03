@@ -333,7 +333,8 @@ function addRecord() {
     // 部位一覧（重複なし）
     const partsList = [...new Set(dayRecords.map(r => r.part))];
     const today = new Date().toISOString().slice(0, 10);
-    const isRecent = isWithinLast7Days(date);
+    const isToday = date === today;
+    const isWithin6Days = isWithinLast7Days(date) && !isToday;
     const title = document.createElement("h3");
 
     if (date === today) {
@@ -362,11 +363,11 @@ recordsEl.appendChild(title);
     const dayContainer = document.createElement("div");
     dayContainer.style.marginLeft = "8px";
 
-    if (isRecent) {
-     dayContainer.style.display = "block";
-    } else {
-     dayContainer.style.display = "none";
-    }
+    if (isToday) {
+    dayContainer.style.display = "block";   // 今日だけ開く
+  } else {
+    dayContainer.style.display = "none";    // それ以外は閉じる
+  }
 
     title.style.cursor = "pointer";
 
@@ -377,8 +378,9 @@ recordsEl.appendChild(title);
 
 recordsEl.appendChild(dayContainer);
     
-  if (!isRecent) {
-  return;
+  // 今日＋直近6日は中身を作る
+if (!isToday && !isWithin6Days) {
+  return; // ← 7日より前は中身を作らない
 }
     
     const parts = grouped[date];
@@ -401,7 +403,7 @@ Object.keys(parts).forEach(part => {
   partContent.style.marginLeft = "8px";
 
   // 今日だけ開く
-  partContent.style.display = isRecent ? "block" : "none";
+  partContent.style.display = isToday ? "block" : "none";
 
   partTitle.onclick = () => {
   const isOpen = partContent.style.display === "block";
