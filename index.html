@@ -282,6 +282,16 @@ function addRecord() {
     render();
   }
 
+  function isWithinLast7Days(dateStr) {
+   const today = new Date();
+   const target = new Date(dateStr);
+
+   const diffDays =
+    (today - target) / (1000 * 60 * 60 * 24);
+
+   return diffDays <= 6;
+}
+  
   function render() {
     const today = new Date().toISOString().slice(0, 10);
 
@@ -323,7 +333,7 @@ function addRecord() {
     // 部位一覧（重複なし）
     const partsList = [...new Set(dayRecords.map(r => r.part))];
     const today = new Date().toISOString().slice(0, 10);
-    const isToday = date === today;
+    const isRecent = isWithinLast7Days(date);
     const title = document.createElement("h3");
 
     if (date === today) {
@@ -352,10 +362,10 @@ recordsEl.appendChild(title);
     const dayContainer = document.createElement("div");
     dayContainer.style.marginLeft = "8px";
 
-    if (isToday) {
-     dayContainer.style.display = "block"; // 今日 → 開いたまま
+    if (isRecent) {
+     dayContainer.style.display = "block";
     } else {
-     dayContainer.style.display = "none";  // それ以外 → 閉じる
+     dayContainer.style.display = "none";
     }
 
     title.style.cursor = "pointer";
@@ -365,7 +375,11 @@ recordsEl.appendChild(title);
       dayContainer.style.display === "none" ? "block" : "none";
     };
 
-    recordsEl.appendChild(dayContainer);
+recordsEl.appendChild(dayContainer);
+    
+  if (!isRecent) {
+  return;
+}
     
     const parts = grouped[date];
 
@@ -373,7 +387,7 @@ Object.keys(parts).forEach(part => {
 
   // 部位タイトル
   const partTitle = document.createElement("div");
-  const arrow = isToday ? "▼" : "▶";
+  const arrow = isRecent ? "▼" : "▶";
   partTitle.textContent = `${arrow} ${part}`;
   partTitle.style.fontWeight = "bold";
   partTitle.style.marginTop = "8px";
@@ -387,7 +401,7 @@ Object.keys(parts).forEach(part => {
   partContent.style.marginLeft = "8px";
 
   // 今日だけ開く
-  partContent.style.display = isToday ? "block" : "none";
+  partContent.style.display = isRecent ? "block" : "none";
 
   partTitle.onclick = () => {
   const isOpen = partContent.style.display === "block";
