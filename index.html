@@ -306,7 +306,7 @@ function addRecord() {
     const grouped = {};
 
     records.forEach(r => {
-   if (!grouped[r.date]) hookup = grouped[r.date] = {};
+   if (!grouped[r.date]) grouped[r.date] = {};
    if (!grouped[r.date][r.part]) grouped[r.date][r.part] = {};
    if (!grouped[r.date][r.part][r.menu]) {
     grouped[r.date][r.part][r.menu] = [];
