@@ -291,11 +291,10 @@ function addRecord() {
 
    return diffDays <= 6;
 }
-  
 function render() {
   const today = new Date().toISOString().slice(0, 10);
 
-  // 壊れたデータは修正
+  // 壊れたデータ修正
   records.forEach(r => {
     if (!r.date) r.date = today;
   });
@@ -310,102 +309,57 @@ function render() {
     grouped[r.date][r.part][r.menu].push(r);
   });
 
-  // 記録一覧表示
   recordsEl.innerHTML = "";
 
-  Object.keys(grouped)
+  // 日付を新しい順にソート
+  const dates = Object.keys(grouped).sort().reverse();
+
+  // 月ごとのデータもまとめる
+  const monthMap = {};
+
+  dates.forEach(date => {
+    const dateObj = new Date(date);
+    const diffDays = (new Date(today) - dateObj) / (1000*60*60*24);
+    const isRecent = diffDays <= 6; // 直近7日以内
+
+    if (!isRecent) {
+      const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,"0")}`;
+      if (!monthMap[monthKey]) monthMap[monthKey] = [];
+      monthMap[monthKey].push(date);
+      return; // 後でまとめて描画
+    }
+
+    // 直近7日 → 今まで通り日別表示
+    appendDateRecords(date, grouped[date], date === today);
+  });
+
+  // それより前 → 月別にまとめる
+  Object.keys(monthMap)
     .sort()
     .reverse()
-    .forEach(date => {
-      const dayRecords = Object.values(grouped[date] || {})
-        .flatMap(parts =>
-          Object.values(parts).flatMap(menus =>
-            Object.values(menus).flat()
-          )
-        );
+    .forEach(month => {
+      const monthTitle = document.createElement("h3");
+      monthTitle.textContent = month;
+      monthTitle.style.cursor = "pointer";
+      monthTitle.style.background = "#e0e0e0";
+      monthTitle.style.padding = "6px";
+      monthTitle.style.borderRadius = "6px";
+      monthTitle.style.marginTop = "8px";
 
-      const totalSets = dayRecords.length;
-      const totalVolume = dayRecords.reduce((sum, r) => sum + r.weight * r.reps, 0);
-      const partsList = [...new Set(dayRecords.map(r => r.part))];
+      const monthContainer = document.createElement("div");
+      monthContainer.style.marginLeft = "8px";
+      monthContainer.style.display = "none"; // 初期は閉じる
 
-      const title = document.createElement("h3");
-      if (date === today) {
-        title.innerHTML = `
-          🔥 今日 (${date})<br>
-          <small>${partsList.join("・")}｜${totalSets}セット｜総Vol ${totalVolume.toLocaleString()}kg</small>
-        `;
-        title.style.color = "#d32f2f";
-        title.style.background = "#ffecec";
-        title.style.padding = "6px";
-        title.style.borderRadius = "6px";
-      } else {
-        title.innerHTML = `
-          ${date}<br>
-          <small>${partsList.join("・")}｜${totalSets}セット｜総Vol ${totalVolume.toLocaleString()}kg</small>
-        `;
-      }
-
-      recordsEl.appendChild(title);
-
-      const dayContainer = document.createElement("div");
-      dayContainer.style.marginLeft = "8px";
-      dayContainer.style.display = date === today ? "block" : "none";
-
-      title.style.cursor = "pointer";
-      title.onclick = () => {
-        dayContainer.style.display = dayContainer.style.display === "none" ? "block" : "none";
+      monthTitle.onclick = () => {
+        monthContainer.style.display = monthContainer.style.display === "none" ? "block" : "none";
       };
 
-      recordsEl.appendChild(dayContainer);
+      recordsEl.appendChild(monthTitle);
+      recordsEl.appendChild(monthContainer);
 
-      const parts = grouped[date];
-      if (!parts) return;
-
-      Object.keys(parts).forEach(part => {
-        const partTitle = document.createElement("div");
-        partTitle.textContent = `▶ ${part}`;
-        partTitle.style.fontWeight = "bold";
-        partTitle.style.marginTop = "8px";
-        partTitle.style.background = "#f0f0f0";
-        partTitle.style.padding = "6px";
-        partTitle.style.borderRadius = "6px";
-        partTitle.style.cursor = "pointer";
-
-        const partContent = document.createElement("div");
-        partContent.style.marginLeft = "8px";
-        partContent.style.display = date === today ? "block" : "none";
-
-        partTitle.onclick = () => {
-          const open = partContent.style.display === "block";
-          partContent.style.display = open ? "none" : "block";
-          partTitle.textContent = `${open ? "▶" : "▼"} ${part}`;
-        };
-
-        dayContainer.appendChild(partTitle);
-        dayContainer.appendChild(partContent);
-
-        const menus = parts[part];
-        Object.keys(menus).forEach(menu => {
-          const menuTitle = document.createElement("div");
-          menuTitle.textContent = `▼ ${menu}`;
-          menuTitle.style.marginTop = "4px";
-          menuTitle.style.fontWeight = "bold";
-          partContent.appendChild(menuTitle);
-
-          const totalSets = menus[menu].length;
-          menus[menu].forEach((r, index) => {
-            const div = document.createElement("div");
-            div.className = "record";
-            div.innerHTML = `
-              ${r.weight}kg × ${r.reps}回（${index + 1}/${totalSets}セット目）
-              <button class="delete-btn">削除</button>
-            `;
-            div.querySelector(".delete-btn").onclick = () => {
-              if (confirm("この記録を削除しますか？")) deleteRecord(r);
-            };
-            partContent.appendChild(div);
-          });
-        });
+      // 月内の日付ごとに表示
+      monthMap[month].sort().reverse().forEach(date => {
+        appendDateRecords(date, grouped[date], false, monthContainer);
       });
     });
 
@@ -413,11 +367,83 @@ function render() {
   updateMenuOptions();
   renderMax();
 
-  // ✅ 今日のサマリーも更新
+  // 今日のサマリーも更新
   renderDailySummary(grouped, today);
 }
 
-// 今日のサマリー描画
+// 日付ごとの表示を作る関数
+function appendDateRecords(date, parts, expand=false, parentEl=null) {
+  const dayContainerParent = parentEl || recordsEl;
+
+  const dayRecords = Object.values(parts).flatMap(p =>
+    Object.values(p).flatMap(m => Object.values(m).flat())
+  );
+  const totalSets = dayRecords.length;
+  const totalVolume = dayRecords.reduce((sum, r) => sum + r.weight * r.reps, 0);
+  const partsList = [...new Set(dayRecords.map(r=>r.part))];
+
+  const title = document.createElement("h4");
+  title.innerHTML = `${expand ? "🔥 今日" : ""} ${date}<br><small>${partsList.join("・")}｜${totalSets}セット｜総Vol ${totalVolume.toLocaleString()}kg</small>`;
+  title.style.color = expand ? "#d32f2f" : "";
+  title.style.background = expand ? "#ffecec" : "";
+  title.style.padding = "4px";
+  title.style.borderRadius = "6px";
+  title.style.cursor = "pointer";
+
+  const dayContainer = document.createElement("div");
+  dayContainer.style.marginLeft = "8px";
+  dayContainer.style.display = expand ? "block" : "none";
+
+  title.onclick = () => {
+    dayContainer.style.display = dayContainer.style.display === "none" ? "block" : "none";
+  };
+
+  dayContainerParent.appendChild(title);
+  dayContainerParent.appendChild(dayContainer);
+
+  Object.keys(parts).forEach(part => {
+    const partTitle = document.createElement("div");
+    partTitle.textContent = `▶ ${part}`;
+    partTitle.style.fontWeight = "bold";
+    partTitle.style.marginTop = "4px";
+    partTitle.style.background = "#f0f0f0";
+    partTitle.style.padding = "4px";
+    partTitle.style.borderRadius = "4px";
+    partTitle.style.cursor = "pointer";
+
+    const partContent = document.createElement("div");
+    partContent.style.marginLeft = "8px";
+    partContent.style.display = expand ? "block" : "none";
+
+    partTitle.onclick = () => {
+      const open = partContent.style.display === "block";
+      partContent.style.display = open ? "none" : "block";
+      partTitle.textContent = `${open ? "▶" : "▼"} ${part}`;
+    };
+
+    dayContainer.appendChild(partTitle);
+    dayContainer.appendChild(partContent);
+
+    const menus = parts[part];
+    Object.keys(menus).forEach(menu => {
+      const menuTitle = document.createElement("div");
+      menuTitle.textContent = `▼ ${menu}`;
+      menuTitle.style.marginTop = "2px";
+      menuTitle.style.fontWeight = "bold";
+      partContent.appendChild(menuTitle);
+
+      const totalSets = menus[menu].length;
+      menus[menu].forEach((r,index)=>{
+        const div = document.createElement("div");
+        div.className = "record";
+        div.innerHTML = `${r.weight}kg × ${r.reps}回（${index+1}/${totalSets}セット目） <button class="delete-btn">削除</button>`;
+        div.querySelector(".delete-btn").onclick = () => {if(confirm("この記録を削除しますか？")) deleteRecord(r);}
+        partContent.appendChild(div);
+      });
+    });
+  });
+}
+  
 function renderDailySummary(grouped, date) {
   dailySummaryEl.innerHTML = "";
 
