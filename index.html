@@ -28,7 +28,7 @@
       box-sizing: border-box;
     }
     input:not([type="range"]),
-　　　 select {
+      select {
       width: 100%;
       padding: 10px;
       font-size: 16px;
@@ -306,12 +306,16 @@ function addRecord() {
     const grouped = {};
 
     records.forEach(r => {
-   if (!grouped[r.date]) grouped[r.date] = {};
-   if (!grouped[r.date][r.part]) grouped[r.date][r.part] = {};
-   if (!grouped[r.date][r.part][r.menu]) {
-    grouped[r.date][r.part][r.menu] = [];
+  // 🔴 壊れたデータは無視する
+    if (!r.date || !r.part || !r.menu) return;
+
+    if (!grouped[r.date]) grouped[r.date] = {};
+    if (!grouped[r.date][r.part]) grouped[r.date][r.part] = {};
+    if (!grouped[r.date][r.part][r.menu]) {
+      grouped[r.date][r.part][r.menu] = [];
   }
-    grouped[r.date][r.part][r.menu].push(r);
+
+  grouped[r.date][r.part][r.menu].push(r);
 });
 
     Object.keys(grouped)
@@ -378,7 +382,9 @@ recordsEl.appendChild(title);
 
 recordsEl.appendChild(dayContainer);
     
-  const parts = grouped[date];
+    const parts = grouped[date];
+    if (!parts) return;
+    
 
 // 今日 or 直近6日だけ中身を作る
 if (isToday || isWithin6Days) {
