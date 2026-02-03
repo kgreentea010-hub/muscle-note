@@ -323,7 +323,12 @@ function addRecord() {
   .reverse()
   .forEach(date => {
     
-    const dayRecords = records.filter(r => r.date === date);
+    const dayRecords = Object.values(grouped[date] || {})
+    .flatMap(parts =>
+      Object.values(parts).flatMap(menus =>
+        Object.values(menus).flat()
+      )
+    );
 
     // セット数
     const totalSets = dayRecords.length;
