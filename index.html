@@ -146,7 +146,17 @@ h3 small {
 
 <div class="card">
   <h2>記録一覧</h2>
+<div id="exercise-search">
+  <select id="partSelect">
+    <option value="">部位を選択</option>
+  </select>
 
+  <select id="menuSelect" disabled>
+    <option value="">種目を選択</option>
+  </select>
+</div>
+
+<hr>
   <div id="records"></div>
 </div>
 <div class="card">
@@ -172,6 +182,8 @@ h3 small {
   const repsEl = document.getElementById("reps");
   const partEl = document.getElementById("part");
   const maxRecordsEl = document.getElementById("maxRecords");
+  const partSelectEl = document.getElementById("partSelect");
+  const menuSelectEl = document.getElementById("menuSelect");
   const timerRange = document.getElementById("timerRange");
   const timerLabel = document.getElementById("timerLabel");
   const startBtn = document.getElementById("startTimer");
@@ -229,7 +241,31 @@ function setToday() {
   dateEl.value = today;
 }
   let records = JSON.parse(localStorage.getItem("records")) || [];
+function buildPartMenuMap(records) {
+  const map = {};
 
+  records.forEach(r => {
+    if (!map[r.part]) {
+      map[r.part] = new Set();
+    }
+    map[r.part].add(r.menu);
+  });
+
+  return map;
+}
+function updatePartSelect() {
+  partSelectEl.innerHTML = '<option value="">部位を選択</option>';
+
+  Object.keys(partMenuMap).forEach(part => {
+    const opt = document.createElement("option");
+    opt.value = part;
+    opt.textContent = part;
+    partSelectEl.appendChild(opt);
+  });
+}
+  
+const partMenuMap = buildPartMenuMap(records);
+  
 function addRecord() {
   if (!partEl.value) {
   alert("部位を選択してください");
@@ -370,7 +406,25 @@ function render() {
   // 今日のサマリーも更新
   //renderDailySummary(grouped, today);
 }
+partSelectEl.addEventListener("change", () => {
+  const selectedPart = partSelectEl.value;
+  menuSelectEl.innerHTML = '<option value="">種目を選択</option>';
 
+  if (!selectedPart) {
+    menuSelectEl.disabled = true;
+    return;
+  }
+
+  partMenuMap[selectedPart].forEach(menu => {
+    const opt = document.createElement("option");
+    opt.value = menu;
+    opt.textContent = menu;
+    menuSelectEl.appendChild(opt);
+  });
+
+  menuSelectEl.disabled = false;
+});
+  
 // 日付ごとの表示を作る関数
 function appendDateRecords(date, parts, expand=false, parentEl=null) {
   const dayContainerParent = parentEl || recordsEl;
@@ -555,6 +609,8 @@ filterMenuEl.addEventListener("change", () => {
   setToday();
   restoreLastInput();
   render();
+  updatePartSelect();
+  
 
   //dateEl.addEventListener("change", () => {
   //renderDailySummary();
