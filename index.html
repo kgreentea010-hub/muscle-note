@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>筋トレノート</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 
 body{
@@ -30,25 +31,14 @@ font-size:16px;
 box-sizing:border-box;
 }
 
-input:not([type="range"]),select{
-border-radius:8px;
-border:1px solid #ccc;
-background:#fff;
-}
-
 button{
 background:#007aff;
-color:white;
+color:#fff;
 border:none;
 border-radius:6px;
 }
 
-.record{margin-top:6px;}
-
-input[type="checkbox"]{
-width:auto;
-margin:0;
-}
+.record{margin-top:6px}
 
 .delete-btn{
 margin-left:8px;
@@ -89,170 +79,57 @@ line-height:1.6;
 <option value="腹">腹</option>
 </select>
 
-<input id="menu" placeholder="種目（例：ベンチプレス）">
-<input id="weight" placeholder="重量（kg）" type="number">
+<input id="menu" placeholder="種目">
+<input id="weight" placeholder="重量" type="number">
 <input id="reps" placeholder="回数" type="number">
 
 <button onclick="addRecord()">記録する</button>
 
-<label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-<input type="checkbox" id="autoRest">
-記録後に自動でレストタイマー開始
-</label>
-
 </div>
 
 <div class="card">
-
-<h2>レストタイマー</h2>
-
-<input type="range" id="timerRange" min="10" max="300" step="10" value="60">
-
-<div id="timerLabel">60 秒</div>
-
-<button id="startTimer">スタート</button>
-<button id="stopTimer">停止</button>
-
-</div>
-
-<div class="card">
-
 <h2>記録一覧</h2>
-
 <div id="dailySummary" class="today-summary"></div>
-
 <div id="records"></div>
-
-</div>
-
-<div class="card">
-
-<h2>種目別履歴</h2>
-
-<select id="filterMenu">
-<option value="">種目を選択</option>
-</select>
-
-<div id="filteredRecords"></div>
-
-<h3>MAX重量</h3>
-
-<div id="maxRecords"></div>
-
-<button onclick="exportCSV()">CSV書き出し</button>
-
 </div>
 
 <script>
 
 const recordsEl=document.getElementById("records")
 const dailySummaryEl=document.getElementById("dailySummary")
+
 const dateEl=document.getElementById("date")
 const partEl=document.getElementById("part")
 const menuEl=document.getElementById("menu")
 const weightEl=document.getElementById("weight")
 const repsEl=document.getElementById("reps")
-const autoRestEl=document.getElementById("autoRest")
-
-const filterMenuEl=document.getElementById("filterMenu")
-const filteredRecordsEl=document.getElementById("filteredRecords")
-const maxRecordsEl=document.getElementById("maxRecords")
-
-const timerRange=document.getElementById("timerRange")
-const timerLabel=document.getElementById("timerLabel")
-const startBtn=document.getElementById("startTimer")
-const stopBtn=document.getElementById("stopTimer")
 
 let records=JSON.parse(localStorage.getItem("records"))||[]
 
-let timerId=null
-let remaining=0
-
-function startRestTimer(){
-
-if(timerId)return
-
-remaining=Number(timerRange.value)
-
-timerLabel.textContent=`${remaining} 秒`
-
-timerId=setInterval(()=>{
-
-remaining--
-
-timerLabel.textContent=`${remaining} 秒`
-
-if(remaining<=0){
-
-clearInterval(timerId)
-
-timerId=null
-
-timerLabel.textContent="休憩終了！"
-
-playBeep()
-
-}
-
-},1000)
-
-}
-
-startBtn.onclick=startRestTimer
-
-stopBtn.onclick=()=>{
-
-clearInterval(timerId)
-
-timerId=null
-
-timerLabel.textContent="停止しました"
-
-}
-
-timerRange.oninput=()=>{
-
-timerLabel.textContent=`${timerRange.value} 秒`
-
-}
-
 function setToday(){
-
 dateEl.value=new Date().toISOString().slice(0,10)
-
 }
 
 function addRecord(){
 
 if(!partEl.value){
-
 alert("部位を選択してください")
-
 return
-
 }
 
 if(!menuEl.value||!weightEl.value||!repsEl.value)return
 
 records.push({
-
 date:dateEl.value,
-
 part:partEl.value,
-
 menu:menuEl.value,
-
 weight:Number(weightEl.value),
-
 reps:Number(repsEl.value)
-
 })
 
 repsEl.value=""
 
 render()
-
-if(autoRestEl.checked)startRestTimer()
 
 }
 
@@ -278,11 +155,65 @@ grouped[r.date][r.part][r.menu].push(r)
 
 const dates=Object.keys(grouped).sort().reverse()
 
+const monthMap={}
+
 dates.forEach(date=>{
 
 if(date===today)return
 
+const diff=(new Date(today)-new Date(date))/(1000*60*60*24)
+
+if(diff<=6){
+
 appendDateRecords(date,grouped[date])
+
+}else{
+
+const d=new Date(date)
+
+const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")
+
+if(!monthMap[key])monthMap[key]=[]
+
+monthMap[key].push(date)
+
+}
+
+})
+
+Object.keys(monthMap).sort().reverse().forEach(month=>{
+
+const monthTitle=document.createElement("h3")
+
+monthTitle.textContent=month
+
+monthTitle.style.cursor="pointer"
+
+monthTitle.style.background="#eee"
+
+monthTitle.style.padding="6px"
+
+monthTitle.style.borderRadius="6px"
+
+const container=document.createElement("div")
+
+container.style.display="none"
+
+monthTitle.onclick=()=>{
+
+container.style.display=
+container.style.display==="none"?"block":"none"
+
+}
+
+recordsEl.appendChild(monthTitle)
+recordsEl.appendChild(container)
+
+monthMap[month].sort().reverse().forEach(date=>{
+
+appendDateRecords(date,grouped[date],container)
+
+})
 
 })
 
@@ -290,17 +221,26 @@ localStorage.setItem("records",JSON.stringify(records))
 
 renderDailySummary(grouped,today)
 
-updateMenuOptions()
-
-renderMax()
-
 }
 
-function appendDateRecords(date,parts){
+function appendDateRecords(date,parts,parent){
+
+const parentEl=parent||recordsEl
+
+const dayRecords=Object.values(parts)
+.flatMap(p=>Object.values(p))
+.flatMap(m=>m)
+
+const totalSets=dayRecords.length
+
+const volume=dayRecords.reduce((sum,r)=>sum+r.weight*r.reps,0)
+
+const partList=[...new Set(dayRecords.map(r=>r.part))]
 
 const title=document.createElement("h4")
 
-title.textContent=date
+title.innerHTML=
+`${date}<br><small>${partList.join("・")}｜${totalSets}セット｜総Vol ${volume.toLocaleString()}kg</small>`
 
 title.style.cursor="pointer"
 
@@ -310,13 +250,13 @@ container.style.display="none"
 
 title.onclick=()=>{
 
-container.style.display=container.style.display==="none"?"block":"none"
+container.style.display=
+container.style.display==="none"?"block":"none"
 
 }
 
-recordsEl.appendChild(title)
-
-recordsEl.appendChild(container)
+parentEl.appendChild(title)
+parentEl.appendChild(container)
 
 Object.keys(parts).forEach(part=>{
 
@@ -343,28 +283,24 @@ partTitle.textContent=`${open?"▶":"▼"} ${part}`
 }
 
 container.appendChild(partTitle)
-
 container.appendChild(partContent)
 
-const menus=parts[part]
-
-Object.keys(menus).forEach(menu=>{
+Object.keys(parts[part]).forEach(menu=>{
 
 const menuTitle=document.createElement("div")
 
 menuTitle.textContent=`▼ ${menu}`
 
-menuTitle.style.marginTop="4px"
-
 partContent.appendChild(menuTitle)
 
-menus[menu].forEach(r=>{
+parts[part][menu].forEach(r=>{
 
 const div=document.createElement("div")
 
 div.className="record"
 
-div.innerHTML=`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
+div.innerHTML=
+`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
 
 div.querySelector("button").onclick=()=>{
 
@@ -424,19 +360,7 @@ const div=document.createElement("div")
 
 div.className="record"
 
-div.innerHTML=`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
-
-div.querySelector("button").onclick=()=>{
-
-if(confirm("削除しますか？")){
-
-records=records.filter(x=>x!==r)
-
-render()
-
-}
-
-}
+div.textContent=`${r.weight}kg × ${r.reps}回`
 
 dailySummaryEl.appendChild(div)
 
@@ -445,84 +369,6 @@ dailySummaryEl.appendChild(div)
 })
 
 })
-
-}
-
-function renderMax(){
-
-maxRecordsEl.innerHTML=""
-
-const maxMap={}
-
-records.forEach(r=>{
-
-if(!maxMap[r.menu]||r.weight>maxMap[r.menu]){
-
-maxMap[r.menu]=r.weight
-
-}
-
-})
-
-Object.keys(maxMap).forEach(menu=>{
-
-const div=document.createElement("div")
-
-div.textContent=`${menu}：MAX ${maxMap[menu]}kg`
-
-maxRecordsEl.appendChild(div)
-
-})
-
-}
-
-function updateMenuOptions(){
-
-const menus=[...new Set(records.map(r=>r.menu))]
-
-filterMenuEl.innerHTML='<option value="">種目を選択</option>'
-
-menus.forEach(menu=>{
-
-const option=document.createElement("option")
-
-option.value=menu
-
-option.textContent=menu
-
-filterMenuEl.appendChild(option)
-
-})
-
-}
-
-function exportCSV(){
-
-const header=["日付","種目","重量","回数"]
-
-const rows=records.map(r=>[r.date,r.menu,r.weight,r.reps])
-
-const csv=[header,...rows].map(r=>r.join(",")).join("\n")
-
-const blob=new Blob([csv])
-
-const url=URL.createObjectURL(blob)
-
-const a=document.createElement("a")
-
-a.href=url
-
-a.download="workout_records.csv"
-
-a.click()
-
-}
-
-function playBeep(){
-
-const audio=new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=")
-
-audio.play()
 
 }
 
