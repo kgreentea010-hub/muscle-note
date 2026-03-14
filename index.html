@@ -1,595 +1,212 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>筋トレノート</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 16px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .card {
-      background: #fff;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-    }
-    input,select, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-    input:not([type="range"]),
-      select {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      background-color: #fff;
-}
-    button {
-      background: #007aff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-    }
-    .record {
-      margin-top: 6px;
-    }
-    input[type="checkbox"] {
-     width: auto;
-     padding: 0;
-     margin: 0;
-    }
-      .delete-btn {
-    margin-left: 8px;
-    padding: 4px 8px;
-    font-size: 12px;
-    background: #e53935;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    }
-    .today-summary {
-  background: #f0f8ff;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
+<meta charset="UTF-8">
+<title>筋トレノート</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:#f5f5f5;
+margin:0;
+padding:16px;
 }
 
-.today-summary h3 {
-  margin: 0 0 6px 0;
-  font-size: 16px;
+h1{text-align:center;}
+
+.card{
+background:#fff;
+padding:12px;
+margin-bottom:12px;
+border-radius:8px;
 }
 
-.today-summary .numbers {
-  display: flex;
-  justify-content: space-between;
-  font-weight: bold;
-}
-.today-summary {
-  line-height: 1.6;
-}
-
-.summary-date {
-  font-weight: bold;
-  margin-bottom: 4px;
+input,select,button{
+width:100%;
+padding:10px;
+margin-top:6px;
+font-size:16px;
+box-sizing:border-box;
 }
 
-.summary-sets,
-.summary-volume {
-  font-size: 14px;
+button{
+background:#007aff;
+color:white;
+border:none;
+border-radius:6px;
 }
 
-h3 small {
-  font-size: 12px;
-  color: #555;
+.record{margin-top:6px;}
+
+.delete-btn{
+margin-left:8px;
+padding:4px 8px;
+font-size:12px;
+background:#e53935;
+color:white;
+border:none;
+border-radius:4px;
 }
-    
-  </style>
+</style>
 </head>
+
 <body>
 
 <h1>筋トレノート</h1>
 
 <div class="card">
-  <input id="date" type="date">
-  
-  <select id="part">
-  <option value="">部位を選択</option>
-  <option value="胸">胸</option>
-  <option value="背中">背中</option>
-  <option value="脚">脚</option>
-  <option value="肩">肩</option>
-  <option value="腕">腕</option>
-  <option value="腹">腹</option>
-  </select>
-  
-  <input id="menu" placeholder="種目（例：ベンチプレス）">
-  <input id="weight" placeholder="重量（kg）" type="number">
-  <input id="reps" placeholder="回数" type="number">
-  <button onclick="addRecord()">記録する</button>
-  
-  <label style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-   <input type="checkbox" id="autoRest">
-  記録後に自動でレストタイマー開始
-</label>
-  
+
+<input id="date" type="date">
+
+<select id="part">
+<option value="">部位を選択</option>
+<option value="胸">胸</option>
+<option value="背中">背中</option>
+<option value="脚">脚</option>
+<option value="肩">肩</option>
+<option value="腕">腕</option>
+<option value="腹">腹</option>
+</select>
+
+<input id="menu" placeholder="種目">
+<input id="weight" placeholder="重量(kg)" type="number">
+<input id="reps" placeholder="回数" type="number">
+
+<button onclick="addRecord()">記録する</button>
+
 </div>
-<div class="card">
-  <h2>レストタイマー</h2>
 
-  <input
-    type="range"
-    id="timerRange"
-    min="10"
-    max="300"
-    step="10"
-    value="60"
-  >
-
-  <div id="timerLabel">60 秒</div>
-
-  <button id="startTimer">スタート</button>
-  <button id="stopTimer">停止</button>
-</div>
 
 <div class="card">
-  <h2>記録一覧</h2>
-  <div id="dailySummary" class="today-summary"></div>
-  <div id="records"></div>
+<h2>記録一覧</h2>
+<div id="records"></div>
 </div>
-<div class="card">
-　<h2>種目別履歴</h2>
-  <select id="filterMenu">
-    <option value="">種目を選択</option>
-  </select>
-  <div id="filteredRecords"></div>
 
-  <h3>MAX重量</h3>
-  <div id="maxRecords"></div>
-  <button onclick="exportCSV()">CSV書き出し</button>
-</div>
 
 <script>
-  const filterMenuEl = document.getElementById("filterMenu");
-  const filteredRecordsEl = document.getElementById("filteredRecords");
-  const recordsEl = document.getElementById("records");
-  const dateEl = document.getElementById("date");
-  const autoRestEl = document.getElementById("autoRest");
-  const menuEl = document.getElementById("menu");
-  const weightEl = document.getElementById("weight");
-  const repsEl = document.getElementById("reps");
-  const partEl = document.getElementById("part");
-  const maxRecordsEl = document.getElementById("maxRecords");
-  const timerRange = document.getElementById("timerRange");
-  const timerLabel = document.getElementById("timerLabel");
-  const startBtn = document.getElementById("startTimer");
-  const stopBtn = document.getElementById("stopTimer");
-  const dailySummaryEl = document.getElementById("dailySummary");
 
-  let timerId = null;
-  let remaining = 0;
+const recordsEl=document.getElementById("records");
+const dateEl=document.getElementById("date");
+const menuEl=document.getElementById("menu");
+const weightEl=document.getElementById("weight");
+const repsEl=document.getElementById("reps");
+const partEl=document.getElementById("part");
 
-  function startRestTimer() {
-   if (timerId) return;
+let records=JSON.parse(localStorage.getItem("records"))||[];
 
-   remaining = Number(timerRange.value);
-   timerLabel.textContent = `${remaining} 秒`;
-   timerLabel.style.color = "";
-   timerLabel.style.fontSize = "";
-   timerLabel.style.fontWeight = "";
-
-   timerId = setInterval(() => {
-    remaining--;
-    timerLabel.textContent = `${remaining} 秒`;
-
-    if (remaining <= 0) {
-      clearInterval(timerId);
-      timerId = null;
-
-      timerLabel.textContent = "休憩終了！";
-      timerLabel.style.color = "red";
-      timerLabel.style.fontSize = "28px";
-      timerLabel.style.fontWeight = "bold";
-
-      playBeep();
-
-      if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200]);
-      }
-    }
-  }, 1000);
+function setToday(){
+dateEl.value=new Date().toISOString().slice(0,10);
 }
 
-  startBtn.addEventListener("click", startRestTimer);
+function addRecord(){
 
-  stopBtn.addEventListener("click", () => {
-  clearInterval(timerId);
-  timerId = null;
-  timerLabel.textContent = "停止しました";
+if(!partEl.value){
+alert("部位を選択してください");
+return;
+}
+
+if(!menuEl.value||!weightEl.value||!repsEl.value)return;
+
+records.push({
+date:dateEl.value,
+part:partEl.value,
+menu:menuEl.value,
+weight:Number(weightEl.value),
+reps:Number(repsEl.value)
 });
 
-timerRange.addEventListener("input", () => {
-  timerLabel.textContent = `${timerRange.value} 秒`;
+repsEl.value="";
+
+render();
+
+}
+
+function deleteRecord(record){
+
+records=records.filter(r=>
+!(r.date===record.date&&
+r.menu===record.menu&&
+r.weight===record.weight&&
+r.reps===record.reps)
+);
+
+render();
+
+}
+
+function render(){
+
+recordsEl.innerHTML="";
+
+const grouped={};
+
+records.forEach(r=>{
+
+if(!grouped[r.date])grouped[r.date]={};
+
+if(!grouped[r.date][r.part])grouped[r.date][r.part]={};
+
+if(!grouped[r.date][r.part][r.menu])grouped[r.date][r.part][r.menu]=[];
+
+grouped[r.date][r.part][r.menu].push(r);
+
 });
-  
-function setToday() {
-  const today = new Date().toISOString().slice(0, 10);
-  dateEl.value = today;
-}
-  let records = JSON.parse(localStorage.getItem("records")) || [];
 
-function addRecord() {
-  if (!partEl.value) {
-  alert("部位を選択してください");
-  return;
-}
-  if (!menuEl.value || !weightEl.value || !repsEl.value) return;
+const dates=Object.keys(grouped).sort().reverse();
 
-  // ✅ 先に保存（pushの外）
-  localStorage.setItem("lastMenu", menuEl.value);
-  localStorage.setItem("lastWeight", weightEl.value);
-  localStorage.setItem("lastDate", dateEl.value);
+dates.forEach(date=>{
 
-  records.push({
-    date: dateEl.value || new Date().toISOString().slice(0, 10),
-    part: partEl.value, 
-    menu: menuEl.value,
-    weight: Number(weightEl.value),
-    reps: Number(repsEl.value)
-  });
+const title=document.createElement("h3");
+title.textContent=date;
+recordsEl.appendChild(title);
 
-  // 回数だけリセット
-  repsEl.value = "";
-  setToday();
+Object.keys(grouped[date]).forEach(part=>{
 
-  render();
+const partTitle=document.createElement("div");
+partTitle.textContent="【"+part+"】";
+partTitle.style.fontWeight="bold";
+recordsEl.appendChild(partTitle);
 
-  if (autoRestEl.checked) {
-    startRestTimer();
-  }
-}
- function updateMenuOptions() {
-  const menus = [...new Set(records.map(r => r.menu))];
+Object.keys(grouped[date][part]).forEach(menu=>{
 
-  filterMenuEl.innerHTML = '<option value="">種目を選択</option>';
+const menuTitle=document.createElement("div");
+menuTitle.textContent="▼ "+menu;
+recordsEl.appendChild(menuTitle);
 
-  menus.forEach(menu => {
-    const option = document.createElement("option");
-    option.value = menu;
-    option.textContent = menu;
-    filterMenuEl.appendChild(option);
-  });
-}
-  function deleteRecord(record) {
-    records = records.filter(r =>
-      !(r.date === record.date &&
-        r.menu === record.menu &&
-        r.weight === record.weight &&
-        r.reps === record.reps)
-    );
-    render();
-  }
+const sets=grouped[date][part][menu];
 
-  function isWithinLast7Days(dateStr) {
-   const today = new Date();
-   const target = new Date(dateStr);
+sets.forEach((r,i)=>{
 
-   const diffDays =
-    (today - target) / (1000 * 60 * 60 * 24);
+const div=document.createElement("div");
+div.className="record";
 
-   return diffDays <= 6;
-}
-  
-function render() {
-  const today = new Date().toISOString().slice(0, 10);
+div.innerHTML=
+r.weight+"kg × "+r.reps+"回 ("+(i+1)+"/"+sets.length+"セット目) "+
+"<button class='delete-btn'>削除</button>";
 
-  // 壊れたデータ修正
-  records.forEach(r => {
-    if (!r.date) r.date = today;
-  });
+div.querySelector("button").onclick=()=>{
+if(confirm("削除しますか？"))deleteRecord(r);
+};
 
-  // 日付・部位・種目ごとにまとめる
-  const grouped = {};
-  records.forEach(r => {
-    if (!r.date || !r.part || !r.menu) return;
-    if (!grouped[r.date]) grouped[r.date] = {};
-    if (!grouped[r.date][r.part]) grouped[r.date][r.part] = {};
-    if (!grouped[r.date][r.part][r.menu]) grouped[r.date][r.part][r.menu] = [];
-    grouped[r.date][r.part][r.menu].push(r);
-  });
+recordsEl.appendChild(div);
 
-  recordsEl.innerHTML = "";
-
-  // 日付を新しい順にソート
-  const dates = Object.keys(grouped).sort().reverse();
-
-  // 月ごとのデータもまとめる
-  const monthMap = {};
-
-  dates.forEach(date => {
-    const dateObj = new Date(date);
-    const diffDays = (new Date(today) - dateObj) / (1000*60*60*24);
-    const isRecent = diffDays <= 6; // 直近7日以内
-
-    if (!isRecent) {
-      const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,"0")}`;
-      if (!monthMap[monthKey]) monthMap[monthKey] = [];
-      monthMap[monthKey].push(date);
-      return; // 後でまとめて描画
-    }
-
-    // 直近7日 → 今まで通り日別表示
-    appendDateRecords(date, grouped[date], date === today);
-  });
-
-  // それより前 → 月別にまとめる
-  Object.keys(monthMap)
-    .sort()
-    .reverse()
-    .forEach(month => {
-      const monthTitle = document.createElement("h3");
-      monthTitle.textContent = month;
-      monthTitle.style.cursor = "pointer";
-      monthTitle.style.background = "#e0e0e0";
-      monthTitle.style.padding = "6px";
-      monthTitle.style.borderRadius = "6px";
-      monthTitle.style.marginTop = "8px";
-
-      const monthContainer = document.createElement("div");
-      monthContainer.style.marginLeft = "8px";
-      monthContainer.style.display = "none"; // 初期は閉じる
-
-      monthTitle.onclick = () => {
-        monthContainer.style.display = monthContainer.style.display === "none" ? "block" : "none";
-      };
-
-      recordsEl.appendChild(monthTitle);
-      recordsEl.appendChild(monthContainer);
-
-      // 月内の日付ごとに表示
-      monthMap[month].sort().reverse().forEach(date => {
-        appendDateRecords(date, grouped[date], false, monthContainer);
-      });
-    });
-
-  localStorage.setItem("records", JSON.stringify(records));
-  updateMenuOptions();
-  renderMax();
-
-  // 今日のサマリーも更新
-  renderDailySummary(grouped, today);
-}
-
-// 日付ごとの表示を作る関数
-function appendDateRecords(date, parts, expand=false, parentEl=null) {
-  const dayContainerParent = parentEl || recordsEl;
-
-  const dayRecords = Object.values(parts).flatMap(p =>
-    Object.values(p).flatMap(m => Object.values(m).flat())
-  );
-  const totalSets = dayRecords.length;
-  const totalVolume = dayRecords.reduce((sum, r) => sum + r.weight * r.reps, 0);
-  const partsList = [...new Set(dayRecords.map(r=>r.part))];
-
-  const title = document.createElement("h4");
-  title.innerHTML = `${expand ? "🔥 今日" : ""} ${date}<br><small>${partsList.join("・")}｜${totalSets}セット｜総Vol ${totalVolume.toLocaleString()}kg</small>`;
-  title.style.color = expand ? "#d32f2f" : "";
-  title.style.background = expand ? "#ffecec" : "";
-  title.style.padding = "4px";
-  title.style.borderRadius = "6px";
-  title.style.cursor = "pointer";
-
-  const dayContainer = document.createElement("div");
-  dayContainer.style.marginLeft = "8px";
-  dayContainer.style.display = expand ? "block" : "none";
-
-  title.onclick = () => {
-    dayContainer.style.display = dayContainer.style.display === "none" ? "block" : "none";
-  };
-
-  dayContainerParent.appendChild(title);
-  dayContainerParent.appendChild(dayContainer);
-
-  Object.keys(parts).forEach(part => {
-    const partTitle = document.createElement("div");
-    partTitle.textContent = `▶ ${part}`;
-    partTitle.style.fontWeight = "bold";
-    partTitle.style.marginTop = "4px";
-    partTitle.style.background = "#f0f0f0";
-    partTitle.style.padding = "4px";
-    partTitle.style.borderRadius = "4px";
-    partTitle.style.cursor = "pointer";
-
-    const partContent = document.createElement("div");
-    partContent.style.marginLeft = "8px";
-    partContent.style.display = expand ? "block" : "none";
-
-    partTitle.onclick = () => {
-      const open = partContent.style.display === "block";
-      partContent.style.display = open ? "none" : "block";
-      partTitle.textContent = `${open ? "▶" : "▼"} ${part}`;
-    };
-
-    dayContainer.appendChild(partTitle);
-    dayContainer.appendChild(partContent);
-
-    const menus = parts[part];
-    Object.keys(menus).forEach(menu => {
-      const menuTitle = document.createElement("div");
-      menuTitle.textContent = `▼ ${menu}`;
-      menuTitle.style.marginTop = "2px";
-      menuTitle.style.fontWeight = "bold";
-      partContent.appendChild(menuTitle);
-
-      const totalSets = menus[menu].length;
-      menus[menu].forEach((r,index)=>{
-        const div = document.createElement("div");
-        div.className = "record";
-        div.innerHTML = `${r.weight}kg × ${r.reps}回（${index+1}/${totalSets}セット目） <button class="delete-btn">削除</button>`;
-        div.querySelector(".delete-btn").onclick = () => {if(confirm("この記録を削除しますか？")) deleteRecord(r);}
-        partContent.appendChild(div);
-      });
-    });
-  });
-}
-  
-function renderDailySummary(grouped, date) {
-  dailySummaryEl.innerHTML = "";
-
-  const parts = grouped[date];
-  if (!parts) {
-    dailySummaryEl.textContent = `📊 ${date} の記録はありません`;
-    return;
-  }
-
-  Object.keys(parts).forEach(part => {
-    const partTitle = document.createElement("div");
-    partTitle.textContent = `【${part}】`;
-    partTitle.style.fontWeight = "bold";
-    partTitle.style.marginTop = "8px";
-    partTitle.style.background = "#f0f0f0";
-    partTitle.style.padding = "6px";
-    partTitle.style.borderRadius = "6px";
-
-    dailySummaryEl.appendChild(partTitle);
-
-    const menus = parts[part];
-
-    Object.keys(menus).forEach(menu => {
-      const menuTitle = document.createElement("div");
-      menuTitle.textContent = `▼ ${menu}`;
-      menuTitle.style.marginTop = "4px";
-      dailySummaryEl.appendChild(menuTitle);
-
-      const totalSets = menus[menu].length;
-
-      menus[menu].forEach((r, index) => {
-        const div = document.createElement("div");
-        div.className = "record";
-
-        div.innerHTML = `
-          ${r.weight}kg × ${r.reps}回（${index + 1}/${totalSets}セット目）
-          <button class="delete-btn">削除</button>
-        `;
-
-        div.querySelector(".delete-btn").onclick = () => {
-          if (confirm("この記録を削除しますか？")) {
-            deleteRecord(r);
-          }
-        };
-
-        dailySummaryEl.appendChild(div);
-      });
-    });
-  });
-}
-function renderMax() {
-  maxRecordsEl.innerHTML = "";
-
-  const maxMap = {};
-
-  records.forEach(r => {
-    // データが壊れてる場合は無視
-    if (!r.menu || r.weight == null) return;
-
-    const w = Number(r.weight);
-    if (!maxMap[r.menu] || w > maxMap[r.menu]) {
-      maxMap[r.menu] = w;
-    }
-  });
-
-  Object.keys(maxMap).forEach(menu => {
-    const div = document.createElement("div");
-    div.textContent = `${menu}：MAX ${maxMap[menu]}kg`;
-    maxRecordsEl.appendChild(div);
-  });
-}
-
-function exportCSV() {
-  if (records.length === 0) {
-    alert("記録がありません");
-    return;
-  }
-
-  const header = ["日付", "種目", "重量(kg)", "回数"];
-  const rows = records.map(r => [
-    r.date,
-    r.menu,
-    r.weight,
-    r.reps
-  ]);
-
-  const csv = [header, ...rows]
-    .map(row => row.join(","))
-    .join("\n");
-
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "workout_records.csv";
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
-filterMenuEl.addEventListener("change", () => {
-  const selected = filterMenuEl.value;
-  filteredRecordsEl.innerHTML = "";
-
-  if (!selected) return;
-
-  records
-    .filter(r => r.menu === selected)
-    .forEach(r => {
-      const div = document.createElement("div");
-      div.className = "record";
-      div.textContent = `${r.date}｜${r.weight}kg × ${r.reps}回`;
-      filteredRecordsEl.appendChild(div);
-    });
 });
-  setToday();
-  restoreLastInput();
-  render();
 
-  //dateEl.addEventListener("change", () => {
-  //renderDailySummary();
-  //});
-  
-function playBeep() {
-  const audio = new Audio(
-    "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
-  );
-  audio.play();
-}
-function restoreLastInput() {
-  const lastDate = localStorage.getItem("lastDate");
-  const today = new Date().toISOString().slice(0, 10);
+});
 
-  // 同じ日なら復元
-  if (lastDate === today) {
-    menuEl.value = localStorage.getItem("lastMenu") || "";
-    weightEl.value = localStorage.getItem("lastWeight") || "";
-  } else {
-    // 日付が変わってたらリセット
-    localStorage.removeItem("lastMenu");
-    localStorage.removeItem("lastWeight");
-    localStorage.removeItem("lastDate");
-  }
+});
+
+});
+
+localStorage.setItem("records",JSON.stringify(records));
+
 }
-  
+
+setToday();
+render();
+
 </script>
+
 </body>
 </html>
