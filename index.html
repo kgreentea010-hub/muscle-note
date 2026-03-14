@@ -5,16 +5,17 @@
 <title>筋トレノート</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-body {
-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-background: #f5f5f5;
-margin: 0;
-padding: 16px;
+
+body{
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:#f5f5f5;
+margin:0;
+padding:16px;
 }
 
-h1 {text-align:center;}
+h1{text-align:center;}
 
-.card {
+.card{
 background:#fff;
 padding:12px;
 margin-bottom:12px;
@@ -66,6 +67,7 @@ border-radius:8px;
 margin-bottom:10px;
 line-height:1.6;
 }
+
 </style>
 </head>
 
@@ -74,6 +76,7 @@ line-height:1.6;
 <h1>筋トレノート</h1>
 
 <div class="card">
+
 <input id="date" type="date">
 
 <select id="part">
@@ -89,15 +92,18 @@ line-height:1.6;
 <input id="menu" placeholder="種目（例：ベンチプレス）">
 <input id="weight" placeholder="重量（kg）" type="number">
 <input id="reps" placeholder="回数" type="number">
+
 <button onclick="addRecord()">記録する</button>
 
 <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
 <input type="checkbox" id="autoRest">
 記録後に自動でレストタイマー開始
 </label>
+
 </div>
 
 <div class="card">
+
 <h2>レストタイマー</h2>
 
 <input type="range" id="timerRange" min="10" max="300" step="10" value="60">
@@ -106,103 +112,140 @@ line-height:1.6;
 
 <button id="startTimer">スタート</button>
 <button id="stopTimer">停止</button>
+
 </div>
 
 <div class="card">
+
 <h2>記録一覧</h2>
+
 <div id="dailySummary" class="today-summary"></div>
+
 <div id="records"></div>
+
 </div>
 
 <div class="card">
+
 <h2>種目別履歴</h2>
+
 <select id="filterMenu">
 <option value="">種目を選択</option>
 </select>
+
 <div id="filteredRecords"></div>
 
 <h3>MAX重量</h3>
+
 <div id="maxRecords"></div>
 
 <button onclick="exportCSV()">CSV書き出し</button>
+
 </div>
 
 <script>
 
-const filterMenuEl=document.getElementById("filterMenu")
-const filteredRecordsEl=document.getElementById("filteredRecords")
 const recordsEl=document.getElementById("records")
+const dailySummaryEl=document.getElementById("dailySummary")
 const dateEl=document.getElementById("date")
-const autoRestEl=document.getElementById("autoRest")
+const partEl=document.getElementById("part")
 const menuEl=document.getElementById("menu")
 const weightEl=document.getElementById("weight")
 const repsEl=document.getElementById("reps")
-const partEl=document.getElementById("part")
+const autoRestEl=document.getElementById("autoRest")
+
+const filterMenuEl=document.getElementById("filterMenu")
+const filteredRecordsEl=document.getElementById("filteredRecords")
 const maxRecordsEl=document.getElementById("maxRecords")
+
 const timerRange=document.getElementById("timerRange")
 const timerLabel=document.getElementById("timerLabel")
 const startBtn=document.getElementById("startTimer")
 const stopBtn=document.getElementById("stopTimer")
-const dailySummaryEl=document.getElementById("dailySummary")
+
+let records=JSON.parse(localStorage.getItem("records"))||[]
 
 let timerId=null
 let remaining=0
 
 function startRestTimer(){
+
 if(timerId)return
+
 remaining=Number(timerRange.value)
+
 timerLabel.textContent=`${remaining} 秒`
 
 timerId=setInterval(()=>{
+
 remaining--
+
 timerLabel.textContent=`${remaining} 秒`
 
 if(remaining<=0){
+
 clearInterval(timerId)
+
 timerId=null
+
 timerLabel.textContent="休憩終了！"
+
 playBeep()
+
 }
+
 },1000)
+
 }
 
 startBtn.onclick=startRestTimer
 
 stopBtn.onclick=()=>{
+
 clearInterval(timerId)
+
 timerId=null
+
 timerLabel.textContent="停止しました"
+
 }
 
 timerRange.oninput=()=>{
+
 timerLabel.textContent=`${timerRange.value} 秒`
+
 }
 
 function setToday(){
-dateEl.value=new Date().toISOString().slice(0,10)
-}
 
-let records=JSON.parse(localStorage.getItem("records"))||[]
+dateEl.value=new Date().toISOString().slice(0,10)
+
+}
 
 function addRecord(){
 
 if(!partEl.value){
+
 alert("部位を選択してください")
+
 return
+
 }
 
 if(!menuEl.value||!weightEl.value||!repsEl.value)return
 
-localStorage.setItem("lastMenu",menuEl.value)
-localStorage.setItem("lastWeight",weightEl.value)
-localStorage.setItem("lastDate",dateEl.value)
-
 records.push({
+
 date:dateEl.value,
+
 part:partEl.value,
+
 menu:menuEl.value,
+
 weight:Number(weightEl.value),
+
 reps:Number(repsEl.value)
+
 })
 
 repsEl.value=""
@@ -210,31 +253,37 @@ repsEl.value=""
 render()
 
 if(autoRestEl.checked)startRestTimer()
+
 }
 
 function render(){
 
-const today=new Date().toISOString().slice(0,10)
-
 recordsEl.innerHTML=""
+
+const today=new Date().toISOString().slice(0,10)
 
 const grouped={}
 
 records.forEach(r=>{
+
 if(!grouped[r.date])grouped[r.date]={}
+
 if(!grouped[r.date][r.part])grouped[r.date][r.part]={}
+
 if(!grouped[r.date][r.part][r.menu])grouped[r.date][r.part][r.menu]=[]
+
 grouped[r.date][r.part][r.menu].push(r)
+
 })
 
 const dates=Object.keys(grouped).sort().reverse()
 
 dates.forEach(date=>{
 
-// ★ 今日の記録は一覧に出さない
 if(date===today)return
 
 appendDateRecords(date,grouped[date])
+
 })
 
 localStorage.setItem("records",JSON.stringify(records))
@@ -244,46 +293,92 @@ renderDailySummary(grouped,today)
 updateMenuOptions()
 
 renderMax()
+
 }
 
 function appendDateRecords(date,parts){
 
 const title=document.createElement("h4")
+
 title.textContent=date
 
+title.style.cursor="pointer"
+
 const container=document.createElement("div")
-container.style.marginLeft="10px"
+
+container.style.display="none"
+
+title.onclick=()=>{
+
+container.style.display=container.style.display==="none"?"block":"none"
+
+}
 
 recordsEl.appendChild(title)
+
 recordsEl.appendChild(container)
 
 Object.keys(parts).forEach(part=>{
 
-const p=document.createElement("div")
-p.textContent=`【${part}】`
-container.appendChild(p)
+const partTitle=document.createElement("div")
 
-Object.keys(parts[part]).forEach(menu=>{
+partTitle.textContent=`▶ ${part}`
 
-const m=document.createElement("div")
-m.textContent=`▼ ${menu}`
-container.appendChild(m)
+partTitle.style.fontWeight="bold"
 
-parts[part][menu].forEach(r=>{
+const partContent=document.createElement("div")
+
+partContent.style.marginLeft="10px"
+
+partContent.style.display="none"
+
+partTitle.onclick=()=>{
+
+const open=partContent.style.display==="block"
+
+partContent.style.display=open?"none":"block"
+
+partTitle.textContent=`${open?"▶":"▼"} ${part}`
+
+}
+
+container.appendChild(partTitle)
+
+container.appendChild(partContent)
+
+const menus=parts[part]
+
+Object.keys(menus).forEach(menu=>{
+
+const menuTitle=document.createElement("div")
+
+menuTitle.textContent=`▼ ${menu}`
+
+menuTitle.style.marginTop="4px"
+
+partContent.appendChild(menuTitle)
+
+menus[menu].forEach(r=>{
 
 const div=document.createElement("div")
+
 div.className="record"
 
 div.innerHTML=`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
 
 div.querySelector("button").onclick=()=>{
+
 if(confirm("削除しますか？")){
+
 records=records.filter(x=>x!==r)
+
 render()
-}
+
 }
 
-container.appendChild(div)
+}
+
+partContent.appendChild(div)
 
 })
 
@@ -300,34 +395,47 @@ dailySummaryEl.innerHTML=""
 const parts=grouped[date]
 
 if(!parts){
+
 dailySummaryEl.textContent="今日の記録なし"
+
 return
+
 }
 
 Object.keys(parts).forEach(part=>{
 
 const p=document.createElement("div")
+
 p.textContent=`【${part}】`
+
 dailySummaryEl.appendChild(p)
 
 Object.keys(parts[part]).forEach(menu=>{
 
 const m=document.createElement("div")
+
 m.textContent=`▼ ${menu}`
+
 dailySummaryEl.appendChild(m)
 
 parts[part][menu].forEach(r=>{
 
 const div=document.createElement("div")
+
 div.className="record"
 
 div.innerHTML=`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
 
 div.querySelector("button").onclick=()=>{
+
 if(confirm("削除しますか？")){
+
 records=records.filter(x=>x!==r)
+
 render()
+
 }
+
 }
 
 dailySummaryEl.appendChild(div)
@@ -347,15 +455,23 @@ maxRecordsEl.innerHTML=""
 const maxMap={}
 
 records.forEach(r=>{
+
 if(!maxMap[r.menu]||r.weight>maxMap[r.menu]){
+
 maxMap[r.menu]=r.weight
+
 }
+
 })
 
 Object.keys(maxMap).forEach(menu=>{
+
 const div=document.createElement("div")
+
 div.textContent=`${menu}：MAX ${maxMap[menu]}kg`
+
 maxRecordsEl.appendChild(div)
+
 })
 
 }
@@ -367,10 +483,15 @@ const menus=[...new Set(records.map(r=>r.menu))]
 filterMenuEl.innerHTML='<option value="">種目を選択</option>'
 
 menus.forEach(menu=>{
+
 const option=document.createElement("option")
+
 option.value=menu
+
 option.textContent=menu
+
 filterMenuEl.appendChild(option)
+
 })
 
 }
@@ -388,20 +509,28 @@ const blob=new Blob([csv])
 const url=URL.createObjectURL(blob)
 
 const a=document.createElement("a")
+
 a.href=url
+
 a.download="workout_records.csv"
+
 a.click()
 
 }
 
 function playBeep(){
+
 const audio=new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=")
+
 audio.play()
+
 }
 
 setToday()
+
 render()
 
 </script>
+
 </body>
 </html>
