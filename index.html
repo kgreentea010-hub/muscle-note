@@ -14,7 +14,7 @@ margin:0;
 padding:16px;
 }
 
-h1{text-align:center;}
+h1{text-align:center}
 
 .card{
 background:#fff;
@@ -85,13 +85,57 @@ line-height:1.6;
 
 <button onclick="addRecord()">記録する</button>
 
+<label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+<input type="checkbox" id="autoRest">
+記録後に自動でレストタイマー開始
+</label>
+
 </div>
 
+
 <div class="card">
-<h2>記録一覧</h2>
-<div id="dailySummary" class="today-summary"></div>
-<div id="records"></div>
+
+<h2>レストタイマー</h2>
+
+<input type="range" id="timerRange" min="10" max="300" step="10" value="60">
+
+<div id="timerLabel">60 秒</div>
+
+<button id="startTimer">スタート</button>
+<button id="stopTimer">停止</button>
+
 </div>
+
+
+<div class="card">
+
+<h2>記録一覧</h2>
+
+<div id="dailySummary" class="today-summary"></div>
+
+<div id="records"></div>
+
+</div>
+
+
+<div class="card">
+
+<h2>種目別履歴</h2>
+
+<select id="filterMenu">
+<option value="">種目を選択</option>
+</select>
+
+<div id="filteredRecords"></div>
+
+<h3>MAX重量</h3>
+
+<div id="maxRecords"></div>
+
+<button onclick="exportCSV()">CSV書き出し</button>
+
+</div>
+
 
 <script>
 
@@ -104,32 +148,114 @@ const menuEl=document.getElementById("menu")
 const weightEl=document.getElementById("weight")
 const repsEl=document.getElementById("reps")
 
+const filterMenuEl=document.getElementById("filterMenu")
+const filteredRecordsEl=document.getElementById("filteredRecords")
+const maxRecordsEl=document.getElementById("maxRecords")
+
+const timerRange=document.getElementById("timerRange")
+const timerLabel=document.getElementById("timerLabel")
+const startBtn=document.getElementById("startTimer")
+const stopBtn=document.getElementById("stopTimer")
+
+const autoRestEl=document.getElementById("autoRest")
+
 let records=JSON.parse(localStorage.getItem("records"))||[]
 
+let timerId=null
+let remaining=0
+
+function startRestTimer(){
+
+if(timerId)return
+
+remaining=Number(timerRange.value)
+
+timerLabel.textContent=`${remaining} 秒`
+
+timerId=setInterval(()=>{
+
+remaining--
+
+timerLabel.textContent=`${remaining} 秒`
+
+if(remaining<=0){
+
+clearInterval(timerId)
+
+timerId=null
+
+timerLabel.textContent="休憩終了！"
+
+playBeep()
+
+}
+
+},1000)
+
+}
+
+startBtn.onclick=startRestTimer
+
+stopBtn.onclick=()=>{
+
+clearInterval(timerId)
+
+timerId=null
+
+timerLabel.textContent="停止しました"
+
+}
+
+timerRange.oninput=()=>{
+
+timerLabel.textContent=`${timerRange.value} 秒`
+
+}
+
+function playBeep(){
+
+const audio=new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=")
+
+audio.play()
+
+}
+
 function setToday(){
+
 dateEl.value=new Date().toISOString().slice(0,10)
+
 }
 
 function addRecord(){
 
 if(!partEl.value){
+
 alert("部位を選択してください")
+
 return
+
 }
 
 if(!menuEl.value||!weightEl.value||!repsEl.value)return
 
 records.push({
+
 date:dateEl.value,
+
 part:partEl.value,
+
 menu:menuEl.value,
+
 weight:Number(weightEl.value),
 reps:Number(repsEl.value)
+
 })
 
 repsEl.value=""
 
 render()
+
+if(autoRestEl.checked)startRestTimer()
 
 }
 
@@ -189,20 +315,13 @@ monthTitle.textContent=month
 
 monthTitle.style.cursor="pointer"
 
-monthTitle.style.background="#eee"
-
-monthTitle.style.padding="6px"
-
-monthTitle.style.borderRadius="6px"
-
 const container=document.createElement("div")
 
 container.style.display="none"
 
 monthTitle.onclick=()=>{
 
-container.style.display=
-container.style.display==="none"?"block":"none"
+container.style.display=container.style.display==="none"?"block":"none"
 
 }
 
@@ -220,6 +339,10 @@ appendDateRecords(date,grouped[date],container)
 localStorage.setItem("records",JSON.stringify(records))
 
 renderDailySummary(grouped,today)
+
+updateMenuOptions()
+
+renderMax()
 
 }
 
@@ -239,8 +362,7 @@ const partList=[...new Set(dayRecords.map(r=>r.part))]
 
 const title=document.createElement("h4")
 
-title.innerHTML=
-`${date}<br><small>${partList.join("・")}｜${totalSets}セット｜総Vol ${volume.toLocaleString()}kg</small>`
+title.innerHTML=`${date}<br><small>${partList.join("・")}｜${totalSets}セット｜総Vol ${volume.toLocaleString()}kg</small>`
 
 title.style.cursor="pointer"
 
@@ -250,8 +372,7 @@ container.style.display="none"
 
 title.onclick=()=>{
 
-container.style.display=
-container.style.display==="none"?"block":"none"
+container.style.display=container.style.display==="none"?"block":"none"
 
 }
 
@@ -269,7 +390,6 @@ partTitle.style.fontWeight="bold"
 const partContent=document.createElement("div")
 
 partContent.style.marginLeft="10px"
-
 partContent.style.display="none"
 
 partTitle.onclick=()=>{
@@ -299,8 +419,7 @@ const div=document.createElement("div")
 
 div.className="record"
 
-div.innerHTML=
-`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
+div.innerHTML=`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
 
 div.querySelector("button").onclick=()=>{
 
@@ -369,6 +488,97 @@ dailySummaryEl.appendChild(div)
 })
 
 })
+
+}
+
+function updateMenuOptions(){
+
+const menus=[...new Set(records.map(r=>r.menu))]
+
+filterMenuEl.innerHTML='<option value="">種目を選択</option>'
+
+menus.forEach(menu=>{
+
+const option=document.createElement("option")
+
+option.value=menu
+option.textContent=menu
+
+filterMenuEl.appendChild(option)
+
+})
+
+}
+
+filterMenuEl.addEventListener("change",()=>{
+
+const selected=filterMenuEl.value
+
+filteredRecordsEl.innerHTML=""
+
+if(!selected)return
+
+records.filter(r=>r.menu===selected).forEach(r=>{
+
+const div=document.createElement("div")
+
+div.className="record"
+
+div.textContent=`${r.date}｜${r.weight}kg × ${r.reps}回`
+
+filteredRecordsEl.appendChild(div)
+
+})
+
+})
+
+function renderMax(){
+
+maxRecordsEl.innerHTML=""
+
+const maxMap={}
+
+records.forEach(r=>{
+
+if(!maxMap[r.menu]||r.weight>maxMap[r.menu]){
+
+maxMap[r.menu]=r.weight
+
+}
+
+})
+
+Object.keys(maxMap).forEach(menu=>{
+
+const div=document.createElement("div")
+
+div.textContent=`${menu}：MAX ${maxMap[menu]}kg`
+
+maxRecordsEl.appendChild(div)
+
+})
+
+}
+
+function exportCSV(){
+
+const header=["日付","種目","重量","回数"]
+
+const rows=records.map(r=>[r.date,r.menu,r.weight,r.reps])
+
+const csv=[header,...rows].map(r=>r.join(",")).join("\n")
+
+const blob=new Blob([csv])
+
+const url=URL.createObjectURL(blob)
+
+const a=document.createElement("a")
+
+a.href=url
+
+a.download="workout_records.csv"
+
+a.click()
 
 }
 
