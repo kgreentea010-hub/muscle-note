@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>筋トレノート</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <style>
+
 body{
 font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 background:#f5f5f5;
@@ -37,7 +38,9 @@ border:none;
 border-radius:6px;
 }
 
-.record{margin-top:6px;}
+.record{
+margin-top:6px;
+}
 
 .delete-btn{
 margin-left:8px;
@@ -48,6 +51,7 @@ color:white;
 border:none;
 border-radius:4px;
 }
+
 </style>
 </head>
 
@@ -69,142 +73,381 @@ border-radius:4px;
 <option value="腹">腹</option>
 </select>
 
-<input id="menu" placeholder="種目">
-<input id="weight" placeholder="重量(kg)" type="number">
+<input id="menu" placeholder="種目（例：ベンチプレス）">
+
+<input id="weight" placeholder="重量（kg）" type="number">
+
 <input id="reps" placeholder="回数" type="number">
 
 <button onclick="addRecord()">記録する</button>
 
-</div>
+<label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+<input type="checkbox" id="autoRest">
+記録後に自動でレストタイマー開始
+</label>
 
+</div>
 
 <div class="card">
-<h2>記録一覧</h2>
-<div id="records"></div>
+
+<h2>レストタイマー</h2>
+
+<input type="range" id="timerRange" min="10" max="300" step="10" value="60">
+
+<div id="timerLabel">60 秒</div>
+
+<button id="startTimer">スタート</button>
+<button id="stopTimer">停止</button>
+
 </div>
 
+<div class="card">
+
+<h2>記録一覧</h2>
+
+<div id="records"></div>
+
+</div>
+
+<div class="card">
+
+<h2>種目別履歴</h2>
+
+<select id="filterMenu">
+<option value="">種目を選択</option>
+</select>
+
+<div id="filteredRecords"></div>
+
+<h3>MAX重量</h3>
+
+<div id="maxRecords"></div>
+
+<button onclick="exportCSV()">CSV書き出し</button>
+
+</div>
 
 <script>
 
-const recordsEl=document.getElementById("records");
-const dateEl=document.getElementById("date");
-const menuEl=document.getElementById("menu");
-const weightEl=document.getElementById("weight");
-const repsEl=document.getElementById("reps");
-const partEl=document.getElementById("part");
+const recordsEl=document.getElementById("records")
+const dateEl=document.getElementById("date")
+const autoRestEl=document.getElementById("autoRest")
+const menuEl=document.getElementById("menu")
+const weightEl=document.getElementById("weight")
+const repsEl=document.getElementById("reps")
+const partEl=document.getElementById("part")
 
-let records=JSON.parse(localStorage.getItem("records"))||[];
+const filterMenuEl=document.getElementById("filterMenu")
+const filteredRecordsEl=document.getElementById("filteredRecords")
+const maxRecordsEl=document.getElementById("maxRecords")
+
+const timerRange=document.getElementById("timerRange")
+const timerLabel=document.getElementById("timerLabel")
+const startBtn=document.getElementById("startTimer")
+const stopBtn=document.getElementById("stopTimer")
+
+let records=JSON.parse(localStorage.getItem("records"))||[]
+
+let timerId=null
+let remaining=0
+
+function startRestTimer(){
+
+if(timerId)return
+
+remaining=Number(timerRange.value)
+
+timerLabel.textContent=`${remaining} 秒`
+
+timerId=setInterval(()=>{
+
+remaining--
+
+timerLabel.textContent=`${remaining} 秒`
+
+if(remaining<=0){
+
+clearInterval(timerId)
+timerId=null
+
+timerLabel.textContent="休憩終了！"
+timerLabel.style.color="red"
+timerLabel.style.fontSize="28px"
+
+playBeep()
+
+}
+
+},1000)
+
+}
+
+startBtn.onclick=startRestTimer
+
+stopBtn.onclick=()=>{
+clearInterval(timerId)
+timerId=null
+timerLabel.textContent="停止しました"
+}
+
+timerRange.oninput=()=>{
+timerLabel.textContent=`${timerRange.value} 秒`
+}
 
 function setToday(){
-dateEl.value=new Date().toISOString().slice(0,10);
+
+dateEl.value=new Date().toISOString().slice(0,10)
+
 }
 
 function addRecord(){
 
 if(!partEl.value){
-alert("部位を選択してください");
-return;
+alert("部位を選択してください")
+return
 }
 
-if(!menuEl.value||!weightEl.value||!repsEl.value)return;
+if(!menuEl.value||!weightEl.value||!repsEl.value)return
 
 records.push({
-date:dateEl.value,
+
+date:dateEl.value||new Date().toISOString().slice(0,10),
+
 part:partEl.value,
+
 menu:menuEl.value,
+
 weight:Number(weightEl.value),
+
 reps:Number(repsEl.value)
-});
 
-repsEl.value="";
+})
 
-render();
+repsEl.value=""
+
+render()
+
+if(autoRestEl.checked)startRestTimer()
 
 }
 
 function deleteRecord(record){
 
 records=records.filter(r=>
+
 !(r.date===record.date&&
 r.menu===record.menu&&
 r.weight===record.weight&&
 r.reps===record.reps)
-);
 
-render();
+)
+
+render()
 
 }
 
 function render(){
 
-recordsEl.innerHTML="";
+recordsEl.innerHTML=""
 
-const grouped={};
+const grouped={}
 
 records.forEach(r=>{
 
-if(!grouped[r.date])grouped[r.date]={};
+if(!grouped[r.date])grouped[r.date]={}
 
-if(!grouped[r.date][r.part])grouped[r.date][r.part]={};
+if(!grouped[r.date][r.part])grouped[r.date][r.part]={}
 
-if(!grouped[r.date][r.part][r.menu])grouped[r.date][r.part][r.menu]=[];
+if(!grouped[r.date][r.part][r.menu])grouped[r.date][r.part][r.menu]=[]
 
-grouped[r.date][r.part][r.menu].push(r);
+grouped[r.date][r.part][r.menu].push(r)
 
-});
+})
 
-const dates=Object.keys(grouped).sort().reverse();
+const dates=Object.keys(grouped).sort().reverse()
 
 dates.forEach(date=>{
 
-const title=document.createElement("h3");
-title.textContent=date;
-recordsEl.appendChild(title);
+appendDateRecords(date,grouped[date],date===dateEl.value)
 
-Object.keys(grouped[date]).forEach(part=>{
+})
 
-const partTitle=document.createElement("div");
-partTitle.textContent="【"+part+"】";
-partTitle.style.fontWeight="bold";
-recordsEl.appendChild(partTitle);
+localStorage.setItem("records",JSON.stringify(records))
 
-Object.keys(grouped[date][part]).forEach(menu=>{
+updateMenuOptions()
 
-const menuTitle=document.createElement("div");
-menuTitle.textContent="▼ "+menu;
-recordsEl.appendChild(menuTitle);
-
-const sets=grouped[date][part][menu];
-
-sets.forEach((r,i)=>{
-
-const div=document.createElement("div");
-div.className="record";
-
-div.innerHTML=
-r.weight+"kg × "+r.reps+"回 ("+(i+1)+"/"+sets.length+"セット目) "+
-"<button class='delete-btn'>削除</button>";
-
-div.querySelector("button").onclick=()=>{
-if(confirm("削除しますか？"))deleteRecord(r);
-};
-
-recordsEl.appendChild(div);
-
-});
-
-});
-
-});
-
-});
-
-localStorage.setItem("records",JSON.stringify(records));
+renderMax()
 
 }
 
-setToday();
-render();
+function appendDateRecords(date,parts,expand){
+
+const title=document.createElement("h4")
+
+title.textContent=date
+
+recordsEl.appendChild(title)
+
+Object.keys(parts).forEach(part=>{
+
+const partTitle=document.createElement("div")
+
+partTitle.textContent="▶ "+part
+
+partTitle.style.fontWeight="bold"
+
+recordsEl.appendChild(partTitle)
+
+Object.keys(parts[part]).forEach(menu=>{
+
+const menuTitle=document.createElement("div")
+
+menuTitle.textContent="▼ "+menu
+
+recordsEl.appendChild(menuTitle)
+
+const sets=parts[part][menu]
+
+sets.forEach((r,i)=>{
+
+const div=document.createElement("div")
+
+div.className="record"
+
+div.innerHTML=
+
+`${r.weight}kg × ${r.reps}回 (${i+1}/${sets.length}セット目)
+<button class="delete-btn">削除</button>`
+
+div.querySelector("button").onclick=()=>{
+if(confirm("この記録を削除しますか？"))deleteRecord(r)
+}
+
+recordsEl.appendChild(div)
+
+})
+
+})
+
+})
+
+}
+
+function updateMenuOptions(){
+
+const menus=[...new Set(records.map(r=>r.menu))]
+
+filterMenuEl.innerHTML='<option value="">種目を選択</option>'
+
+menus.forEach(menu=>{
+
+const option=document.createElement("option")
+
+option.value=menu
+option.textContent=menu
+
+filterMenuEl.appendChild(option)
+
+})
+
+}
+
+filterMenuEl.onchange=()=>{
+
+const selected=filterMenuEl.value
+
+filteredRecordsEl.innerHTML=""
+
+if(!selected)return
+
+records.filter(r=>r.menu===selected).forEach(r=>{
+
+const div=document.createElement("div")
+
+div.className="record"
+
+div.textContent=`${r.date}｜${r.weight}kg × ${r.reps}回`
+
+filteredRecordsEl.appendChild(div)
+
+})
+
+}
+
+function renderMax(){
+
+maxRecordsEl.innerHTML=""
+
+const maxMap={}
+
+records.forEach(r=>{
+
+if(!maxMap[r.menu]||r.weight>maxMap[r.menu]){
+
+maxMap[r.menu]=r.weight
+
+}
+
+})
+
+Object.keys(maxMap).forEach(menu=>{
+
+const div=document.createElement("div")
+
+div.textContent=`${menu}：MAX ${maxMap[menu]}kg`
+
+maxRecordsEl.appendChild(div)
+
+})
+
+}
+
+function exportCSV(){
+
+if(records.length===0){
+alert("記録がありません")
+return
+}
+
+const header=["日付","種目","重量","回数"]
+
+const rows=records.map(r=>[
+r.date,
+r.menu,
+r.weight,
+r.reps
+])
+
+const csv=[header,...rows].map(r=>r.join(",")).join("\n")
+
+const blob=new Blob([csv],{type:"text/csv"})
+
+const url=URL.createObjectURL(blob)
+
+const a=document.createElement("a")
+
+a.href=url
+a.download="workout_records.csv"
+
+a.click()
+
+URL.revokeObjectURL(url)
+
+}
+
+function playBeep(){
+
+const audio=new Audio(
+"data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
+)
+
+audio.play()
+
+}
+
+setToday()
+
+render()
 
 </script>
 
