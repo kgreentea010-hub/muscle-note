@@ -32,6 +32,7 @@ margin-top:6px;
 font-size:16px;
 box-sizing:border-box;
 }
+
 input[type="checkbox"]{
 width:auto;
 margin:0;
@@ -64,6 +65,32 @@ margin-bottom:10px;
 line-height:1.6;
 }
 
+/* 追加：オート補完 */
+
+#menuList{
+background:#fff;
+border:1px solid #ccc;
+border-radius:6px;
+margin-top:4px;
+max-height:120px;
+overflow-y:auto;
+}
+
+.menu-item{
+padding:6px;
+cursor:pointer;
+}
+
+.menu-item:hover{
+background:#eee;
+}
+
+.last-record{
+font-size:14px;
+color:#666;
+margin-top:4px;
+}
+
 </style>
 </head>
 
@@ -86,6 +113,10 @@ line-height:1.6;
 </select>
 
 <input id="menu" placeholder="種目">
+
+<div id="lastRecord" class="last-record"></div>
+<div id="menuList"></div>
+
 <input id="weight" placeholder="重量" type="number">
 <input id="reps" placeholder="回数" type="number">
 
@@ -154,6 +185,9 @@ const menuEl=document.getElementById("menu")
 const weightEl=document.getElementById("weight")
 const repsEl=document.getElementById("reps")
 
+const lastRecordEl=document.getElementById("lastRecord")
+const menuList=document.getElementById("menuList")
+
 const filterMenuEl=document.getElementById("filterMenu")
 const filteredRecordsEl=document.getElementById("filteredRecords")
 const maxRecordsEl=document.getElementById("maxRecords")
@@ -170,9 +204,11 @@ let records=JSON.parse(localStorage.getItem("records"))||[]
 let timerId=null
 let remaining=0
 
+
 function startRestTimer(){
 
-if(timerId)return
+clearInterval(timerId)
+timerId=null
 
 remaining=Number(timerRange.value)
 
@@ -232,6 +268,77 @@ dateEl.value=new Date().toISOString().slice(0,10)
 
 }
 
+
+menuEl.addEventListener("input",()=>{
+
+const text=menuEl.value
+
+menuList.innerHTML=""
+
+if(!text){
+
+lastRecordEl.textContent=""
+return
+}
+
+const last=getLastRecord(text)
+
+if(last){
+
+lastRecordEl.textContent=`前回 ${last.weight}kg × ${last.reps}回`
+
+}else{
+
+lastRecordEl.textContent=""
+
+}
+
+const menus=[...new Set(records.map(r=>r.menu))]
+
+menus
+.filter(m=>m.includes(text))
+.slice(0,5)
+.forEach(m=>{
+
+const div=document.createElement("div")
+
+div.className="menu-item"
+div.textContent=m
+
+div.onclick=()=>{
+
+menuEl.value=m
+menuList.innerHTML=""
+
+const last=getLastRecord(m)
+
+if(last){
+
+weightEl.value=last.weight
+repsEl.value=last.reps
+
+}
+
+}
+
+menuList.appendChild(div)
+
+})
+
+})
+
+
+function getLastRecord(menu){
+
+const list=records.filter(r=>r.menu===menu)
+
+if(!list.length)return null
+
+return list[list.length-1]
+
+}
+
+
 function addRecord(){
 
 if(!partEl.value){
@@ -264,6 +371,7 @@ render()
 if(autoRestEl.checked)startRestTimer()
 
 }
+
 
 function render(){
 
@@ -351,6 +459,7 @@ updateMenuOptions()
 renderMax()
 
 }
+
 
 function appendDateRecords(date,parts,parent){
 
@@ -449,6 +558,7 @@ partContent.appendChild(div)
 
 }
 
+
 function renderDailySummary(grouped,date){
 
 dailySummaryEl.innerHTML=""
@@ -497,6 +607,7 @@ dailySummaryEl.appendChild(div)
 
 }
 
+
 function updateMenuOptions(){
 
 const menus=[...new Set(records.map(r=>r.menu))]
@@ -515,6 +626,7 @@ filterMenuEl.appendChild(option)
 })
 
 }
+
 
 filterMenuEl.addEventListener("change",()=>{
 
@@ -537,6 +649,7 @@ filteredRecordsEl.appendChild(div)
 })
 
 })
+
 
 function renderMax(){
 
@@ -565,6 +678,7 @@ maxRecordsEl.appendChild(div)
 })
 
 }
+
 
 function exportCSV(){
 
