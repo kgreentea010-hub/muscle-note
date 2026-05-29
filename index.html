@@ -297,6 +297,10 @@ r=>r.menu===menu
 if(history.length===0){
 
 lastRecordInfo.textContent="前回記録なし"
+  
+weightEl.value=""
+
+repsEl.value=""
 
 return
 
@@ -315,6 +319,8 @@ ${last.weight}kg × ${last.reps}回<br>
 ${last.date}
 
 `
+weightEl.value = last.weight
+repsEl.value = last.reps
 
 }
 menuEl.addEventListener("input",showLastRecord)
