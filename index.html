@@ -63,7 +63,27 @@ border-radius:8px;
 margin-bottom:10px;
 line-height:1.6;
 }
+#suggestions{
+background:white;
+border-radius:8px;
+overflow:hidden;
+margin-top:4px;
+}
 
+.suggestion-item{
+padding:10px;
+border-bottom:1px solid #eee;
+cursor:pointer;
+}
+
+.suggestion-item:last-child{
+border-bottom:none;
+}
+
+.suggestion-item:hover{
+background:#f5f5f5;
+}
+  
 </style>
 </head>
 
@@ -86,6 +106,7 @@ line-height:1.6;
 </select>
 
 <input id="menu" placeholder="種目">
+<div id="suggestions"></div>
 <div id="lastRecordInfo"
 style="
 margin-top:8px;
@@ -165,7 +186,8 @@ const weightEl=document.getElementById("weight")
 const repsEl=document.getElementById("reps")
   
 const lastRecordInfo=document.getElementById("lastRecordInfo")
-
+const suggestionsEl=document.getElementById("suggestions")
+  
 const filterMenuEl=document.getElementById("filterMenu")
 const filteredRecordsEl=document.getElementById("filteredRecords")
 const maxRecordsEl=document.getElementById("maxRecords")
@@ -324,6 +346,57 @@ repsEl.value = last.reps
 
 }
 menuEl.addEventListener("input",showLastRecord)
+
+function showSuggestions(){
+
+const keyword=menuEl.value.trim()
+
+suggestionsEl.innerHTML=""
+
+if(!keyword)return
+
+const menus=[
+...new Set(records.map(r=>r.menu))
+]
+
+const matched=menus.filter(menu=>
+menu.toLowerCase().includes(
+keyword.toLowerCase()
+)
+)
+
+matched.slice(0,5).forEach(menu=>{
+
+const item=document.createElement("div")
+
+item.className="suggestion-item"
+
+item.textContent=menu
+
+item.onclick=()=>{
+
+menuEl.value=menu
+
+suggestionsEl.innerHTML=""
+
+showLastRecord()
+
+}
+
+suggestionsEl.appendChild(item)
+
+})
+
+}
+
+menuEl.addEventListener("input",()=>{
+
+showLastRecord()
+
+showSuggestions()
+
+})
+  
 function render(){
 
 recordsEl.innerHTML=""
