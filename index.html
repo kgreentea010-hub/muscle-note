@@ -485,7 +485,19 @@ const div=document.createElement("div")
 
 div.className="record"
 
-div.textContent=`${r.weight}kg × ${r.reps}回`
+div.innerHTML=`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
+
+div.querySelector("button").onclick=()=>{
+
+if(confirm("削除しますか？")){
+
+records=records.filter(x=>x!==r)
+
+render()
+
+}
+
+}
 
 dailySummaryEl.appendChild(div)
 
