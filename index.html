@@ -454,32 +454,38 @@ function renderDailySummary(grouped,date){
 dailySummaryEl.innerHTML=""
 
 const parts=grouped[date]
-const todayRecords = Object.values(parts)
-.flatMap(part => Object.values(part))
-.flatMap(menu => menu)
-
-const totalSets = todayRecords.length
-
-const totalVolume = todayRecords.reduce(
-(sum,r)=>sum + (r.weight * r.reps),
-0
-)  
 
 if(!parts){
-const summary=document.createElement("div")
 
-summary.style.fontWeight="bold"
-summary.style.marginBottom="10px"
-
-summary.innerHTML=
-`今日の合計：${totalSets}セット ｜ 総Vol ${totalVolume.toLocaleString()}kg`
-
-dailySummaryEl.appendChild(summary)
 dailySummaryEl.textContent="今日の記録なし"
 
 return
 
 }
+
+const todayRecords=Object.values(parts)
+.flatMap(part=>Object.values(part))
+.flatMap(menu=>menu)
+
+const totalSets=todayRecords.length
+
+const totalVolume=todayRecords.reduce(
+(sum,r)=>sum+(r.weight*r.reps),
+0
+)
+
+const summary=document.createElement("div")
+
+summary.style.fontWeight="bold"
+summary.style.marginBottom="10px"
+summary.style.background="#e8f4ff"
+summary.style.padding="8px"
+summary.style.borderRadius="8px"
+
+summary.innerHTML=
+`今日の合計：${totalSets}セット ｜ 総Vol ${totalVolume.toLocaleString()}kg`
+
+dailySummaryEl.appendChild(summary)
 
 Object.keys(parts).forEach(part=>{
 
@@ -503,7 +509,8 @@ const div=document.createElement("div")
 
 div.className="record"
 
-div.innerHTML=`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
+div.innerHTML=
+`${r.weight}kg × ${r.reps}回 <button class="delete-btn">削除</button>`
 
 div.querySelector("button").onclick=()=>{
 
@@ -526,7 +533,6 @@ dailySummaryEl.appendChild(div)
 })
 
 }
-
 function updateMenuOptions(){
 
 const menus=[...new Set(records.map(r=>r.menu))]
