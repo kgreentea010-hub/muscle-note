@@ -86,6 +86,16 @@ line-height:1.6;
 </select>
 
 <input id="menu" placeholder="種目">
+<div id="lastRecordInfo"
+style="
+margin-top:8px;
+padding:8px;
+background:#f8f8f8;
+border-radius:8px;
+font-size:14px;
+">
+前回記録なし
+</div>
 <input id="weight" placeholder="重量" type="number">
 <input id="reps" placeholder="回数" type="number">
 
@@ -153,6 +163,8 @@ const partEl=document.getElementById("part")
 const menuEl=document.getElementById("menu")
 const weightEl=document.getElementById("weight")
 const repsEl=document.getElementById("reps")
+  
+const lastRecordInfo=document.getElementById("lastRecordInfo")
 
 const filterMenuEl=document.getElementById("filterMenu")
 const filteredRecordsEl=document.getElementById("filteredRecords")
@@ -264,7 +276,48 @@ render()
 if(autoRestEl.checked)startRestTimer()
 
 }
+function showLastRecord(){
 
+const menu=menuEl.value.trim()
+
+if(!menu){
+
+lastRecordInfo.textContent="前回記録なし"
+
+return
+
+}
+
+const history=records.filter(
+
+r=>r.menu===menu
+
+)
+
+if(history.length===0){
+
+lastRecordInfo.textContent="前回記録なし"
+
+return
+
+}
+
+const last=history[history.length-1]
+
+lastRecordInfo.innerHTML=
+
+`
+
+<b>前回記録</b><br>
+
+${last.weight}kg × ${last.reps}回<br>
+
+${last.date}
+
+`
+
+}
+menuEl.addEventListener("input",showLastRecord)
 function render(){
 
 recordsEl.innerHTML=""
