@@ -454,9 +454,27 @@ function renderDailySummary(grouped,date){
 dailySummaryEl.innerHTML=""
 
 const parts=grouped[date]
+const todayRecords = Object.values(parts)
+.flatMap(part => Object.values(part))
+.flatMap(menu => menu)
+
+const totalSets = todayRecords.length
+
+const totalVolume = todayRecords.reduce(
+(sum,r)=>sum + (r.weight * r.reps),
+0
+)  
 
 if(!parts){
+const summary=document.createElement("div")
 
+summary.style.fontWeight="bold"
+summary.style.marginBottom="10px"
+
+summary.innerHTML=
+`今日の合計：${totalSets}セット ｜ 総Vol ${totalVolume.toLocaleString()}kg`
+
+dailySummaryEl.appendChild(summary)
 dailySummaryEl.textContent="今日の記録なし"
 
 return
